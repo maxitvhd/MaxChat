@@ -114,12 +114,12 @@ const UpdateTicketService = async ({
           action: "delete",
           ticketId: ticket.id
         });
-      console.log(117, "UpdateTicketService")
+      
       return { ticket, oldStatus, oldUserId };
     }
 
     if (oldStatus === "closed") {
-      console.log(122, "UpdateTicketService")
+      
       let otherTicket = await Ticket.findOne({
         where: {
           contactId: ticket.contactId,
@@ -143,7 +143,7 @@ const UpdateTicketService = async ({
       companyId,
       whatsappId: ticket?.whatsappId
     });
-    // console.log("GETTING WHATSAPP UPDATE TICKETSERVICE", ticket?.whatsappId)
+    // 
     const { complationMessage, ratingMessage, groupAsTicket } = await ShowWhatsAppService(
       ticket?.whatsappId,
 
@@ -224,7 +224,7 @@ const UpdateTicketService = async ({
               ticketId: ticket.id
             });
 
-          console.log(277, "UpdateTicketService")
+          
           return { ticket, oldStatus, oldUserId };
 
         }
@@ -309,7 +309,7 @@ const UpdateTicketService = async ({
           action: "delete",
           ticketId: ticket.id
         });
-      console.log(309, "UpdateTicketService")
+      
       return { ticket, oldStatus, oldUserId };
     }
     let queue
@@ -499,7 +499,7 @@ const UpdateTicketService = async ({
           await ticketTraking.update({
             userId: newTicketTransfer.userId
           })
-          // console.log("emitiu socket 497", ticket.id, newTicketTransfer.id)
+          // 
           io.of(String(companyId))
             // .to(oldStatus)
             .emit(`company-${companyId}-ticket`, {
@@ -741,7 +741,7 @@ const UpdateTicketService = async ({
 
 
     if (ticket.status !== oldStatus || ticket.user?.id !== oldUserId || ticket.queueId !== oldQueueId) {
-      // console.log("emitiu socket 739", ticket.id)
+      // 
 
       io.of(String(companyId))
         // .to(oldStatus)
@@ -750,7 +750,7 @@ const UpdateTicketService = async ({
           ticketId: ticket.id
         });
     }
-    // console.log("emitiu socket 746", ticket.id)
+    // 
 
     io.of(String(companyId))
       // .to(ticket.status)
@@ -764,7 +764,7 @@ const UpdateTicketService = async ({
 
     return { ticket, oldStatus, oldUserId };
   } catch (err) {
-    console.log("erro ao atualizar o ticket", ticketId, "ticketData", ticketData)
+    
     Sentry.captureException(err);
   }
 };

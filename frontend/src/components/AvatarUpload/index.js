@@ -27,13 +27,13 @@ const AvatarUploader = ({ setAvatar, avatar, companyId }) => {
   useEffect(() => {
     if (avatar && !selectedFile) {
       setPreviewImage(null); // Limpar a prévia após o upload
-      console.log('Prop avatar atualizado:', avatar); // Log para depuração
+      // Log para depuração
     }
   }, [avatar, selectedFile]);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    console.log('Arquivo selecionado:', file); // Log para depuração
+    // Log para depuração
     setSelectedFile(file);
     setAvatar(file);
 
@@ -41,7 +41,7 @@ const AvatarUploader = ({ setAvatar, avatar, companyId }) => {
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewImage(reader.result);
-        console.log('Prévia da imagem gerada:', reader.result); // Log para depuração
+        // Log para depuração
       };
       reader.readAsDataURL(file);
     }

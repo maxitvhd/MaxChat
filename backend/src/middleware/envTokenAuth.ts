@@ -15,7 +15,7 @@ const envTokenAuth = (
     const { token: bodyToken } = req.body as TokenPayload;
     const { token: queryToken } = req.query as TokenPayload;
 
-    console.log("|========= | middleware | ========|", req.query)
+    
 
     
     if (queryToken === process.env.ENV_TOKEN) {
@@ -28,7 +28,7 @@ const envTokenAuth = (
   
 
   } catch (e) {
-    console.log(e);
+    
   }
 
   throw new AppError("Token inválido", 403);

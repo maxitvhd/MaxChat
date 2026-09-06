@@ -69,7 +69,7 @@ export async function ImportContactsService(
   //       const response = await CheckContactNumber(newContact.number, companyId);
   //       const number = response;
   //       newContact.number = number;
-  //       console.log('number', number)
+  //       
   //       await newContact.save();
   //     } catch (e) {
   //       logger.error(`Número de contato inválido: ${newContact.number}`);

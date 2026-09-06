@@ -27,7 +27,7 @@ export default memo(({ data, isConnectable }) => {
         type="target"
         position="left"
         style={{ background: "#0000FF" }}
-        onConnect={(params) => console.log("handle onConnect", params)}
+        onConnect={(params) => {}}
         isConnectable={isConnectable}
       />
       <div style={{color: '#ededed', fontSize: '16px', flexDirection: 'row', display: 'flex'}}>

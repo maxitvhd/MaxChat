@@ -49,7 +49,7 @@ const VcardPreview = ({ contact, numbers, queueId, whatsappId }) => {
     //                 setContact(obj)
 
     //             } catch (err) {
-    //                 console.log(err)
+    //                 
     //                 toastError(err);
     //             }
     //         };
@@ -93,7 +93,7 @@ const VcardPreview = ({ contact, numbers, queueId, whatsappId }) => {
                     }
             
                 } catch (err) {
-                    console.log(err)
+                    
                     toastError(err);
                 }
             };

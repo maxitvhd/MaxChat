@@ -93,7 +93,7 @@ const CreateMessageService = async ({
   const io = getIO();
 
   if (!messageData?.ticketImported) {
-    // console.log("emitiu socket 96", message.ticketId)
+    // 
 
     io.of(String(companyId))
       // .to(message.ticketId.toString())

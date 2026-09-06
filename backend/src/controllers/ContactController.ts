@@ -131,7 +131,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
   const { searchParam, pageNumber, contactTag: tagIdsStringified, isGroup } = req.query as IndexQuery;
   const { id: userId, companyId } = req.user;
 
-  console.log("index", { companyId, userId, searchParam })
+  
 
   let tagsIds: number[] = [];
 
@@ -158,7 +158,7 @@ export const getContact = async (
   const { name, number } = req.body as IndexGetContactQuery;
   const { companyId } = req.user;
 
-  console.log("getContact", { companyId, name, number })
+  
 
   const contact = await GetContactService({
     name,
@@ -174,7 +174,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   const newContact: ContactData = req.body;
   const newRemoteJid = newContact.number;
 
-  console.log("store", { companyId, newContact })
+  
 
   const findContact = await Contact.findOne({
     where: {
@@ -373,7 +373,7 @@ export const getContactProfileURL = async (req: Request, res: Response) => {
   const { number } = req.params
   const { companyId } = req.user;
 
-  console.log("getContactProfileURL", { number, companyId })
+  
   if (number) {
     const validNumber = await CheckContactNumber(number, companyId);
 
@@ -413,10 +413,10 @@ export const getContactProfileURL = async (req: Request, res: Response) => {
     const numberUser = vNumber.toString().substr(-8, 8);
 
     if (numberDDD <= '30' && numberDDI === '55') {
-      console.log("menor 30")
+      
       vNumber = `${numberDDI + numberDDD + 9 + numberUser}@s.whatsapp.net`;
     } else if (numberDDD > '30' && numberDDI === '55') {
-      console.log("maior 30")
+      
       vNumber = `${numberDDI + numberDDD + numberUser}@s.whatsapp.net`;
     } else {
       vNumber = `${number}@s.whatsapp.net`;

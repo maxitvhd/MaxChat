@@ -422,7 +422,7 @@ const TicketsManagerTabs = () => {
       });
       handleSnackbarClose();
     } catch (err) {
-      console.log("Error: ", err);
+      
     }
   };
 

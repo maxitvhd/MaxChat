@@ -292,12 +292,12 @@ async function handleSendScheduledMessage(job) {
       // Realizar a soma da data com base no intervalo e valor do intervalo
       let novaData = new Date(dataExistente); // Clone da data existente para não modificar a original
 
-      console.log(unidadeIntervalo)
+      
       if (unidadeIntervalo !== "minuts") {
         novaData.setDate(novaData.getDate() + schedule.valorIntervalo * (unidadeIntervalo === 'days' ? 1 : unidadeIntervalo === 'weeks' ? 7 : 30));
       } else {
         novaData.setMinutes(novaData.getMinutes() + Number(schedule.valorIntervalo));
-        console.log(novaData)
+        
       }
 
       if (schedule.tipoDias === 5 && !isDiaUtil(novaData)) {
@@ -461,7 +461,7 @@ async function getSettings(campaign): Promise<CampaignSettings> {
     };
 
   } catch (error) {
-    console.log(error);
+    
     throw error; // rejeita a Promise com o erro original
   }
 }
@@ -1043,7 +1043,7 @@ async function handleDispatchCampaign(job) {
   } catch (err: any) {
     Sentry.captureException(err);
     logger.error(err.message);
-    console.log(err.stack);
+    
   }
 }
 
@@ -1636,9 +1636,9 @@ Qualquer duvida estamos a disposição!
 
           transporter.sendMail(mailOptions, (err, info) => {
             if (err)
-              console.log(err)
+              
             else
-              console.log(info);
+              
           }); */
 
         }

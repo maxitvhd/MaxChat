@@ -222,9 +222,9 @@ const flowBuilderQueue = async (
   };
 
 
-  console.log("======================================")
-  console.log("|         flowBuilderQueue           |")
-  console.log("======================================")
+  
+  
+  
 
 
   const nodes: INodes[] = flow.flow["nodes"]
@@ -270,9 +270,9 @@ const flowbuilderIntegration = async (
   message: any,
 ) => {
 
-  console.log("======================================")
-  console.log("|      flowbuilderIntegration        |")
-  console.log("======================================")
+  
+  
+  
 
 
   await ticket.update({
@@ -388,7 +388,7 @@ const flowbuilderIntegration = async (
 
       // const worker = new Worker("./src/services/WebhookService/WorkerAction.ts");
 
-      // console.log('DISPARO4')
+      // 
       // // Enviar as variáveis como parte da mensagem para o Worker
       // const data = {
       //   idFlowDb: webhook.config["details"].idFlow,
@@ -406,7 +406,7 @@ const flowbuilderIntegration = async (
       // worker.postMessage(data);
 
       // worker.on("message", message => {
-      //   console.log(`Mensagem do worker: ${message}`);
+      //   
       // });
 
       await ActionsWebhookFacebookService(
@@ -444,7 +444,7 @@ const flowbuilderIntegration = async (
 
       // const worker = new Worker("./src/services/WebhookService/WorkerAction.ts");
 
-      // console.log('DISPARO5')
+      // 
       // // Enviar as variáveis como parte da mensagem para o Worker
       // const data = {
       //   idFlowDb: parseInt(ticketUpdate.flowStopped),
@@ -461,7 +461,7 @@ const flowbuilderIntegration = async (
       // };
       // worker.postMessage(data);
       // worker.on("message", message => {
-      //   console.log(`Mensagem do worker: ${message}`);
+      //   
       // });
 
       await ActionsWebhookFacebookService(
@@ -573,7 +573,7 @@ export const handleMessage = async (
       let rollbackTag;
       let nextTag;
       let ticketTag = undefined;
-      // console.log(ticket.id)
+      // 
       if (ticket?.company?.plan?.useKanban) {
         ticketTag = await TicketTag.findOne({
           where: {
@@ -804,7 +804,7 @@ export const handleMessage = async (
         }
       } catch (e) {
         throw new Error(e);
-        console.log(e);
+        
       }
 
       if (message.attachments) {
@@ -826,7 +826,7 @@ export const handleMessage = async (
       }
 
 
-      console.log({ ticket })
+      
 
       if (
         !ticket.fromMe &&
@@ -916,7 +916,7 @@ const verifyQueue = async (
   ticket: Ticket,
   contact: Contact
 ) => {
-  // console.log("VERIFYING QUEUE", ticket.whatsappId, getSession.id)
+  // 
   const { queues, greetingMessage } = await ShowWhatsAppService(getSession.id!, ticket.companyId);
 
 
@@ -952,7 +952,7 @@ const verifyQueue = async (
   const choosenQueue = queues[+selectedOption - 1];
 
   if (choosenQueue) {
-    console.log(585, "facebookMessageListener")
+    
 
     await UpdateTicketService({
       ticketData: { queueId: choosenQueue.id },

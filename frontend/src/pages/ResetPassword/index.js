@@ -183,7 +183,7 @@ const RedefinirSenha = () => {
       setError("Token de redefinição ausente ou inválido. Por favor, solicite um novo link de redefinição.");
       console.error("No token found in URL:", location.search);
     } else {
-      console.log("Token extracted from URL:", token);
+      
     }
   }, [token, location.search]);
 
@@ -204,7 +204,7 @@ const RedefinirSenha = () => {
     }
 
     setEnviando(true);
-    console.log("Submitting reset password request:", { token, newPassword: "****" }); // Mask password in logs
+    // Mask password in logs
 
     try {
       await api.post("/auth/reset-password", {

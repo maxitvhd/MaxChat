@@ -204,7 +204,7 @@ export default function VerticalLinearStepper(props) {
           setSteps(data);
           setLoading(false);
         } catch (err) {
-          console.log(err);
+          
         }
       };
       fetchList();

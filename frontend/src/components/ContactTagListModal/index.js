@@ -49,7 +49,7 @@ const ContactTagListModal = ({ open, onClose, tag }) => {
   const { user, socket } = useContext(AuthContext);
 
   useEffect(() => {
-    console.log("tagList", tagList)
+    
   }, [tagList])
 
   useEffect(() => {

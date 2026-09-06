@@ -134,7 +134,7 @@ const UpdateWhatsAppService = async ({
       await oldDefaultWhatsapp.update({ isDefault: false });
     }
   }
-  // console.log("GETTING WHATSAPP SHOW WHATSAPP 1", whatsappId, companyId)
+  // 
   const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
 
 

@@ -226,7 +226,7 @@ const FlowDefault = () => {
   };
 
   const handleSaveDefault = async () => {
-    console.log(configExist)
+    
 
     let idWelcome = flowsDataObj.filter(item => item.name === flowSelectedWelcome)
     let idPhrase = flowsDataObj.filter(item => item.name === flowSelectedPhrase)

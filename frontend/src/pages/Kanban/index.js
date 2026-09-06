@@ -85,7 +85,7 @@ const Kanban = () => {
       setTags(fetchedTags);
       fetchTickets();
     } catch (error) {
-      console.log(error);
+      
     }
   };
 
@@ -100,7 +100,7 @@ const Kanban = () => {
       });
       setTickets(data.tickets);
     } catch (err) {
-      console.log(err);
+      
       setTickets([]);
     }
   };
@@ -259,7 +259,7 @@ const Kanban = () => {
       await fetchTickets(jsonString);
       popularCards(jsonString);
     } catch (err) {
-      console.log(err);
+      
     }
   };
 

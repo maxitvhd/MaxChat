@@ -116,7 +116,7 @@ const ContactImport = () => {
   const processImport = async () => {
     setUploading(true);
 
-    console.log(selection)
+    
 
     if (!selection.number) {
       toastError("Não foi selecionado o campo de número do contato");

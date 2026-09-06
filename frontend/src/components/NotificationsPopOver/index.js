@@ -115,7 +115,7 @@ const NotificationsPopOver = (volume) => {
 		soundAlertRef.current = play;
 
 		if (!("Notification" in window)) {
-			console.log("This browser doesn't support notifications");
+			
 		} else {
 			Notification.requestPermission();
 		}

@@ -16,7 +16,7 @@ const useSettings = () => {
       method: "PUT",
       data,
     });
-    console.log(responseData);
+    
     return responseData;
   };
 

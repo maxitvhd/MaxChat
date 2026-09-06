@@ -152,7 +152,7 @@ const FilesModal = ({ open, onClose, fileListId, reload }) => {
             if (fileListId) {
                 const { data } = await api.put(`/files/${fileListId}`, fileData)
                 if (data.options.length > 0)
-                    // console.log(values.options)
+                    // 
                     uploadFiles(data.options, values.options, fileListId)
             } else {
                 const { data } = await api.post("/files", fileData);

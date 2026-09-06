@@ -581,7 +581,7 @@ const MessageInput = ({ ticketId, ticketStatus, droppedFiles, contactId, ticketC
 
     // Certifique-se de que a variável medias esteja preenchida antes de continuar
     if (!mediasUpload.length) {
-      console.log("Nenhuma mídia selecionada.");
+      
       setLoading(false);
       return;
     }

@@ -78,7 +78,7 @@ export const update = async (
 ): Promise<Response> => {
   const { kanban } = req.body;
 
-  //console.log(kanban)
+  //
   if (req.user.profile !== "admin" && kanban === 1) {
     throw new AppError("ERR_NO_PERMISSION", 403);
   }
@@ -154,7 +154,7 @@ export const removeContactTag = async (
   const { tagId, contactId } = req.params;
   const { companyId } = req.user;
 
-  console.log(tagId, contactId)
+  
 
   await ContactTag.destroy({
     where: {

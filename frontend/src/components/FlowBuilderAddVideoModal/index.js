@@ -135,7 +135,7 @@ const FlowBuilderAddVideoModal = ({ open, onSave, onUpdate, data, close }) => {
             },
             error(err) {
               alert("erro");
-              console.log(err.message);
+              
             }
           });
         } else {

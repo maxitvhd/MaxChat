@@ -193,7 +193,7 @@ const Reports = () => {
         }
       });
 
-      console.log(ticketsData)
+      
       const ws = XLSX.utils.json_to_sheet(ticketsData);
       const wb = XLSX.utils.book_new();
 
@@ -213,7 +213,7 @@ const Reports = () => {
 
   const handleFilter = async (pageNumber) => {
     setLoading(true); // Define o estado de loading como true durante o carregamento
-    console.log(onlyRated)
+    
     try {
       const data = await getReport({
         searchParam,

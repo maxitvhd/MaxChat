@@ -618,7 +618,7 @@ const hanldeReplyMessage = (e, message) => {
 };
 
 const checkMessageMedia = (message) => {
-  console.log(message)
+  
   if (message.mediaType === "locationMessage" && message.body.split('|').length >= 2) {
     let locationParts = message.body.split('|')
     let imageLocation = locationParts[0]
@@ -648,7 +648,7 @@ const checkMessageMedia = (message) => {
           }
         }
       }
-      // console.log(message)
+      // 
       return <VcardPreview contact={contact} numbers={obj[0]?.number} queueId={message?.ticket?.queueId} whatsappId={message?.ticket?.whatsappId} />
     } else
 

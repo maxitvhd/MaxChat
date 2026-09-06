@@ -113,7 +113,7 @@ const CampaignModalPhrase = ({ open, onClose, FlowCampaignId, onSave }) => {
   const detailsPhrase = async flows => {
     setLoading(true);
     await api.get(`/flowcampaign/${FlowCampaignId}`).then(res => {
-      console.log("dete", res.data);
+      
       setDataItem({
         name: res.data.details.name,
         phrase: res.data.details.phrase

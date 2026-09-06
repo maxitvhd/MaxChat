@@ -546,7 +546,7 @@ const AllConnections = () => {
                       <TableRowSkeleton />
                     ) : (
                       <>
-                        {console.log(companies, whats)}
+                        {}
                         {companies?.length > 0 && companies.map(company => (
                           <TableRow key={company.id}>
                             <TableCell align="center">

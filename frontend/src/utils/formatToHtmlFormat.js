@@ -11,6 +11,6 @@ export default function formatToHtmlFormat(editorState) {
 
     return htmlText;
   } catch (error) {
-    console.log(error);
+    
   }
 }

@@ -132,9 +132,9 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     });
   }
 
-  console.log("================ WhatsAppController ==============")
-  console.log(req.body)
-  console.log("==================================================")
+  
+  
+  
 
   const { whatsapp, oldDefaultWhatsapp } = await CreateWhatsAppService({
     name,
@@ -323,7 +323,7 @@ export const storeFacebook = async (
     }
     return res.status(200);
   } catch (error) {
-    console.log(error);
+    
     return res.status(400).json({
       error: "Facebook page not found"
     });
@@ -335,7 +335,7 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
   const { session } = req.query;
 
-  // console.log("SHOWING WHATSAPP", whatsappId)
+  // 
   const whatsapp = await ShowWhatsAppService(whatsappId, companyId, session);
 
 
@@ -395,7 +395,7 @@ export const remove = async (
   if (profile !== "admin") {
     throw new AppError("ERR_NO_PERMISSION", 403);
   }
-  console.log("REMOVING WHATSAPP", whatsappId)
+  
   const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
 
 
@@ -505,7 +505,7 @@ export const removeAdmin = async (
   const { whatsappId } = req.params;
   const { companyId } = req.user;
   const io = getIO();
-  console.log("REMOVING WHATSAPP ADMIN", whatsappId)
+  
   const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
 
 
@@ -555,7 +555,7 @@ export const removeAdmin = async (
 export const showAdmin = async (req: Request, res: Response): Promise<Response> => {
   const { whatsappId } = req.params;
   const { companyId } = req.user;
-  // console.log("SHOWING WHATSAPP ADMIN", whatsappId)
+  // 
   const whatsapp = await ShowWhatsAppServiceAdmin(whatsappId);
 
 

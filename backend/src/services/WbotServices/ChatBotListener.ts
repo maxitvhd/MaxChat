@@ -425,7 +425,7 @@ const backToMainMenu = async (
     ticketId: ticket.id,
     companyId: ticket.companyId
   });
-  // console.log("GETTING WHATSAPP BACK TO MAIN MENU", ticket.whatsappId, wbot.id)
+  // 
   const { queues, greetingMessage, greetingMediaAttachment } = await ShowWhatsAppService(wbot.id!, ticket.companyId);
 
 
@@ -676,7 +676,7 @@ export const sayChatbot = async (
   msg: proto.IWebMessageInfo,
   ticketTraking: TicketTraking
 ): Promise<any> => {
-  // console.log("LINHA 718")
+  // 
   // const selectedOption =
   //   msg?.message?.buttonsResponseMessage?.selectedButtonId ||
   //   msg?.message?.listResponseMessage?.singleSelectReply.selectedRowId ||
@@ -691,7 +691,7 @@ export const sayChatbot = async (
 
   const getStageBot = await ShowDialogChatBotsServices(contact.id);
 
-  // console.log(queues)
+  // 
   // let enabledIntegrationActive: any
 
   // if (
@@ -759,7 +759,7 @@ export const sayChatbot = async (
   // //             await sleep(2000)
   // //             await sendMessage(wbot, contact, ticket, body);
   // //           } catch (error) {
-  // //             console.log('Não consegui enviar a mensagem!')
+  // //             
   // //           }
 
   // //           var data = JSON.stringify({});
@@ -777,7 +777,7 @@ export const sayChatbot = async (
   // //           axios(config)
   // //             .then(async function (response) {
 
-  // //               // console.log('response.data.customers[0]', response.data.customers[0])
+  // //               // 
 
   // //               let clientId
   // //               let full_name
@@ -829,9 +829,9 @@ export const sayChatbot = async (
 
   // //                 axios(config1)
   // //                   .then(async function (response) {
-  // //                     // console.log('response.data.billings', response.data.billings)
+  // //                     // 
   // //                     let qtd = response.data.billings.length;
-  // //                     // console.log('qtd', qtd)
+  // //                     // 
 
   // //                     for (var i = 0; i < qtd; i++) {
 
@@ -869,7 +869,7 @@ export const sayChatbot = async (
   // //                                 await sleep(1000)
   // //                                 await sendMessage(wbot, contact, ticket, boletoDigitableLine);
   // //                               } catch (error) {
-  // //                                 console.log('Não consegui enviar a mensagem!')
+  // //                                 
   // //                               }
   // //                             }
   // //                           } catch (err) { }
@@ -894,7 +894,7 @@ export const sayChatbot = async (
   // //                           await sleep(2000)
   // //                           await sendMessage(wbot, contact, ticket, bodyBoleto);
   // //                         } catch (error) {
-  // //                           console.log('Não consegui enviar a mensagem!')
+  // //                           
   // //                         }
   // //                       }
 
@@ -902,7 +902,7 @@ export const sayChatbot = async (
 
   // //                   })
   // //                   .catch(function (error) {
-  // //                     console.log(error);
+  // //                     
   // //                   });
 
   // //               }
@@ -912,19 +912,19 @@ export const sayChatbot = async (
   // //                   await sleep(2000)
   // //                   await sendMessage(wbot, contact, ticket, bodyBoleto);
   // //                 } catch (error) {
-  // //                   console.log('Não consegui enviar a mensagem!')
+  // //                   
   // //                 }
   // //               }
 
   // //             })
   // //             .catch(async function (error) {
-  // //               console.log('error3', error.response.data)
+  // //               
   // //               try {
   // //                 const bodyBoleto = `*Assistente Virtual:*\nNão foi localizado nenhum boleto em aberto para você.\n\n_Aguarde um momento para falar com um de nossos atendentes!_`
   // //                 await sleep(2000)
   // //                 await sendMessage(wbot, contact, ticket, bodyBoleto);
   // //               } catch (error) {
-  // //                 console.log('Não consegui enviar a mensagem!')
+  // //                 
   // //               }
   // //             })
   // //         }
@@ -1343,7 +1343,7 @@ export const sayChatbot = async (
   // //           await sleep(2000)
   // //           await sendMessage(wbot, contact, ticket, body);
   // //         } catch (error) {
-  // //           console.log('Não consegui enviar a mensagem!')
+  // //           
   // //         }
   // //       }
 
@@ -1413,7 +1413,7 @@ export const sayChatbot = async (
     //   }
     // });
 
-    // console.log('randomUserId', randomUserId)
+    // 
 
     // if (settingsUserRandom?.value === "enabled") {
     //   await UpdateTicketService({
@@ -1543,7 +1543,7 @@ export const sayChatbot = async (
     const choosenQueue = bots.options[+selected - 1]
       ? bots.options[+selected - 1]
       : bots.options[0];
-    // console.log("linha 1508")
+    // 
     if (!choosenQueue.greetingMessage) {
       await DeleteDialogChatBotsServices(contact.id);
       return;

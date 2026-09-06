@@ -53,7 +53,7 @@ process.on("unhandledRejection", (reason, p) => {
 // cron.schedule("* * * * * *", async () => {
 
 //   try {
-//     // console.log("Running a job at 5 minutes at America/Sao_Paulo timezone")
+//     // 
 //     await ScheduledMessagesJob();
 //     await ScheduleMessagesGenerateJob();
 //   }
@@ -66,8 +66,8 @@ process.on("unhandledRejection", (reason, p) => {
 // cron.schedule("* * * * * *", async () => {
 
 //   try {
-//     // console.log("Running a job at 01:00 at America/Sao_Paulo timezone")
-//     console.log("Running a job at 2 minutes at America/Sao_Paulo timezone")
+//     // 
+//     
 //     await ScheduleMessagesEnvioJob();
 //     await ScheduleMessagesEnvioForaHorarioJob()
 //   }

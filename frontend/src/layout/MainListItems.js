@@ -309,7 +309,7 @@ const MainListItems = ({ collapsed, drawerClose }) => {
     if (user.id) {
       const companyId = user.companyId;
       //    const socket = socketManager.GetSocket();
-      // console.log('socket nListItems')
+      // 
       const onCompanyChatMainListItems = (data) => {
         if (data.action === "new-message") {
           dispatch({ type: "CHANGE_CHAT", payload: data });

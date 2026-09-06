@@ -116,7 +116,7 @@ const DashboardManage = () => {
     (async () => {
       try {
         const { data } = await api.get("/usersMoments");
-        console.log(data)
+        
         setTickets(data);
         setUpdate(!update);
       } catch (err) {
@@ -131,7 +131,7 @@ const DashboardManage = () => {
 
   useEffect(() => {
     const companyId = user.companyId;
-    console.log("socket painel")
+    
     // const socket = socketManager.GetSocket();
   
     // const onConnect = () => {
@@ -167,7 +167,7 @@ const DashboardManage = () => {
   }, [socket]);
 
   const Moments = useMemo(() => {
-    // console.log(tickets)
+    // 
     if (tickets && tickets.length > 0) {
       const ticketsByUser = tickets.reduce((userTickets, ticket) => {
         const user = ticket.user;

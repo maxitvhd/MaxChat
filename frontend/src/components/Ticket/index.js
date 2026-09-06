@@ -76,9 +76,9 @@ const Ticket = () => {
   const { companyId } = user;
 
   useEffect(() => {
-    console.log("======== Ticket ===========")
-    console.log(ticket)
-    console.log("===========================")
+    
+    
+    
 }, [ticket])
 
   useEffect(() => {

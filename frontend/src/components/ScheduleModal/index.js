@@ -213,7 +213,7 @@ const ScheduleModal = ({ open, onClose, scheduleId, contactId, cleanContact, rel
 					setSchedule(prevState => {
 						return { ...prevState, ...data, sendAt: moment(data.sendAt).format('YYYY-MM-DDTHH:mm') };
 					});
-					console.log(data)
+					
 					if (data.whatsapp) {
 						setSelectedWhatsapps(data.whatsapp.id);
 					}
@@ -351,8 +351,8 @@ const ScheduleModal = ({ open, onClose, scheduleId, contactId, cleanContact, rel
 			}));
 			toast.success(i18n.t("scheduleModal.toasts.deleted"));
 			if (typeof reload == "function") {
-				console.log(reload);
-				console.log("1");
+				
+				
 				reload();
 			}
 		}

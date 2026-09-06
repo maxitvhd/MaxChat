@@ -56,7 +56,7 @@ const createOrUpdateBaileysService = async ({
     await new Promise(resolve => setTimeout(resolve, 1000));
     return baileys;
   } catch (error) {
-    console.log(error, whatsappId, contacts);
+    
     throw new Error(error);
   }
 };

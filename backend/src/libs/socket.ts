@@ -34,7 +34,7 @@ export const initIO = (httpServer: Server): SocketIO => {
 
     const { userId } = socket.handshake.query;
     // logger.info(`Client connected namespace ${socket.nsp.name}`);
-    // console.log(`namespace ${socket.nsp.name}`, "UserId Socket", userId)
+    // 
 
 
     socket.on("joinChatBox", (ticketId: string) => {

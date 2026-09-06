@@ -258,7 +258,7 @@ const MessageModal = ({ open, onClose, messageId, reload }) => {
         reload();
       } else {
         const response = await api.post("/schedules-message", formData);
-        console.log(response);
+        
         toast.success(i18n.t("messageModal.success.save"));
         handleClose();
         reload();

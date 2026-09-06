@@ -95,7 +95,7 @@ const FlowBuilderOpenAIModal = ({ open, onSave, data, onUpdate, close }) => {
         title: "Editar OpenAI do fluxo",
         btn: "Salvar",
       });
-      console.log("FlowTybebotEdit", data);
+      
       setIntegration({
         ...data.data.typebotIntegration,
       });

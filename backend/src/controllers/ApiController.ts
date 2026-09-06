@@ -288,7 +288,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
   if (noRegister) {
     if (medias) {
       try {
-        // console.log(medias)
+        // 
         await Promise.all(
           medias.map(async (media: Express.Multer.File) => {
             const publicFolder = path.resolve(__dirname, "..", "..", "public");
@@ -307,7 +307,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
           })
         )
       } catch (error) {
-        console.log(medias)
+        
         throw new AppError("Error sending API media: " + error.message);
       }
     } else {

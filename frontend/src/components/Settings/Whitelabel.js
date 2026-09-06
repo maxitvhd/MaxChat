@@ -157,9 +157,9 @@ export default function Whitelabel(props) {
   const { update } = useSettings();
 
   function updateSettingsLoaded(key, value) {
-    console.log("|=========== updateSettingsLoaded ==========|")
-    console.log(key, value)
-    console.log("|===========================================|")
+    
+    
+    
     if (key === 'primaryColorLight' || key === 'primaryColorDark' || key === 'appName') {
       localStorage.setItem(key, value);
     };
@@ -216,9 +216,7 @@ export default function Whitelabel(props) {
         let progress = Math.round(
           (event.loaded * 100) / event.total
         );
-        console.log(
-          `A imagem  está ${progress}% carregada... `
-        );
+        
       },
     }).then((response) => {
       updateSettingsLoaded(`appLogo${mode}`, response.data);
@@ -227,7 +225,7 @@ export default function Whitelabel(props) {
       console.error(
         `Houve um problema ao realizar o upload da imagem.`
       );
-      console.log(err);
+      
     });
   };
 

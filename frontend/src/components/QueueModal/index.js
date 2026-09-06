@@ -364,7 +364,7 @@ const QueueModal = ({ open, onClose, queueId, onEdit }) => {
   };
 
   const handleSaveBot = async (values) => {
-    console.log(values)
+    
     try {
       if (queueId) {
         const { data } = await api.put(`/queue/${queueId}`, values);

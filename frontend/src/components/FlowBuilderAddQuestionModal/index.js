@@ -74,7 +74,7 @@ const FlowBuilderAddQuestionModal = ({
         title: "Editar Perguta do fluxo",
         btn: "Salvar",
       });
-      console.log("FlowTybebotEdit", data.data.typebotIntegration);
+      
       setMessage(data.data.typebotIntegration.message)
       setIntegration({
         ...data.data.typebotIntegration,

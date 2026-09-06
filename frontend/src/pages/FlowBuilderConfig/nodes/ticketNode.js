@@ -10,7 +10,7 @@ import { Typography } from "@material-ui/core";
 
 export default memo(({ data, isConnectable, id }) => {
   const storageItems = useNodeStorage();
-  console.log(12, "ticketNode", data)
+  
   return (
     <div
       style={{
@@ -32,7 +32,7 @@ export default memo(({ data, isConnectable, id }) => {
           left: "-12px",
           cursor: 'pointer'
         }}
-        onConnect={params => console.log("handle onConnect", params)}
+        onConnect={(params) => {}}
         isConnectable={isConnectable}
       >
         <ArrowForwardIos

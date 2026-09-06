@@ -189,7 +189,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
                 await verifyMessageMedia(sentMedia, ticket, ticket.contact, true);
               }
             } catch (error) {
-              console.log(error);
+              
             }
           }
 
@@ -235,7 +235,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
     }
     return res.send();
   } catch (error) {
-    console.log(error);
+    
     return res.status(400).json({ error: error.message });
   }
 };
@@ -463,7 +463,7 @@ export const send = async (req: Request, res: Response): Promise<Response> => {
 
   } catch (err: any) {
 
-    console.log(err);
+    
     if (Object.keys(err).length === 0) {
       throw new AppError(
         "Não foi possível enviar a mensagem, tente novamente em alguns instantes"

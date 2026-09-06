@@ -54,7 +54,7 @@ const EditWhatsAppMessage = async ({
     
     return { ticket: message.ticket, message: message };
   } catch (err) {
-    console.log(err);
+    
     throw new AppError("ERR_EDITING_WAPP_MSG");
   }
 

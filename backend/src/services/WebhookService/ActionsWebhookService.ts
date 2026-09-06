@@ -71,20 +71,7 @@ export const ActionsWebhookService = async (
   try {
     const io = getIO();
     let next = nextStage;
-    console.log(
-      "ActionWebhookService | 53",
-      idFlowDb,
-      companyId,
-      nodes,
-      connects,
-      nextStage,
-      dataWebhook,
-      details,
-      hashWebhookId,
-      pressKey,
-      idTicket,
-      numberPhrase
-    );
+    
     let createFieldJsonName = "";
 
     const connectStatic = connects;
@@ -182,11 +169,11 @@ export const ActionsWebhookService = async (
       let ticketInit: Ticket;
 
       if (pressKey) {
-        console.log("UPDATE2...");
+        
         if (pressKey === "parar") {
-          console.log("UPDATE3...");
+          
           if (idTicket) {
-            console.log("UPDATE4...");
+            
             ticketInit = await Ticket.findOne({
               where: { id: idTicket, whatsappId }
             });
@@ -198,16 +185,16 @@ export const ActionsWebhookService = async (
         }
 
         if (execFn === "") {
-          console.log("UPDATE5...");
+          
           nodeSelected = {
             type: "menu"
           };
         } else {
-          console.log("UPDATE6...");
+          
           nodeSelected = nodes.filter(node => node.id === execFn)[0];
         }
       } else {
-        console.log("UPDATE7...");
+        
         const otherNode = nodes.filter(node => node.id === next)[0];
         if (otherNode) {
           nodeSelected = otherNode;
@@ -243,9 +230,9 @@ export const ActionsWebhookService = async (
         //} )
         await intervalWhats("1");
       }
-      console.log("273");
+      
       if (nodeSelected.type === "typebot") {
-        console.log("275");
+        
         const wbot = getWbot(whatsapp.id);
         await typebotListener({
           wbot: wbot,
@@ -582,7 +569,7 @@ export const ActionsWebhookService = async (
       let isMenu: boolean;
 
       if (nodeSelected.type === "menu") {
-        console.log(650, "menu");
+        
         if (pressKey) {
           const filterOne = connectStatic.filter(
             confil => confil.source === next
@@ -606,14 +593,14 @@ export const ActionsWebhookService = async (
           pressKey = "999";
 
           const isNodeExist = nodes.filter(item => item.id === execFn);
-          console.log(674, "menu");
+          
           if (isNodeExist.length > 0) {
             isMenu = isNodeExist[0].type === "menu" ? true : false;
           } else {
             isMenu = false;
           }
         } else {
-          console.log(681, "menu");
+          
           let optionsMenu = "";
           nodeSelected.data.arrayOption.map(item => {
             optionsMenu += `[${item.number}] ${item.value}\n`;
@@ -710,7 +697,7 @@ export const ActionsWebhookService = async (
       let isContinue = false;
 
       if (pressKey === "999" && execCount > 0) {
-        console.log(587, "ActionsWebhookService | 587");
+        
 
         pressKey = undefined;
         let result = connects.filter(connect => connect.source === execFn)[0];
@@ -742,7 +729,7 @@ export const ActionsWebhookService = async (
             next = result.target;
           }
         }
-        console.log(619, "ActionsWebhookService");
+        
       }
 
       if (!pressKey && !isContinue) {
@@ -750,10 +737,10 @@ export const ActionsWebhookService = async (
           connect => connect.source === nodeSelected.id
         ).length;
 
-        console.log(626, "ActionsWebhookService");
+        
 
         if (nextNode === 0) {
-          console.log(654, "ActionsWebhookService");
+          
 
           await Ticket.findOne({
             where: { id: idTicket, whatsappId, companyId: companyId }
@@ -774,9 +761,9 @@ export const ActionsWebhookService = async (
         break;
       }
 
-      console.log(678, "ActionsWebhookService");
+      
 
-      console.log("UPDATE10...");
+      
       ticket = await Ticket.findOne({
         where: { id: idTicket, whatsappId, companyId: companyId }
       });
@@ -791,7 +778,7 @@ export const ActionsWebhookService = async (
           });
       }
 
-      console.log("UPDATE12...");
+      
       await ticket.update({
         whatsappId: whatsappId,
         queueId: ticket?.queueId,

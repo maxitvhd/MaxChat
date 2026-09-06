@@ -165,7 +165,7 @@ const FlowBuilderSingleBlockModal = ({
         value: value,
         number: newArrMessage[i],
       });
-      console.log("text");
+      
     }
     //Todos os intervalos
     for (let i = 0; i < numberInterval; i++) {
@@ -182,7 +182,7 @@ const FlowBuilderSingleBlockModal = ({
         value: value,
         number: newArrInterval[i],
       });
-      console.log("int");
+      
     }
 
     //Todas as imagens
@@ -319,7 +319,7 @@ const FlowBuilderSingleBlockModal = ({
       }
     }
 
-    console.log(elementsSequence);
+    
 
     return elementsSequence;
   };
@@ -408,7 +408,7 @@ const FlowBuilderSingleBlockModal = ({
       const array = old;
       const index = array.indexOf(id);
       moveItemParaFrente(index);
-      console.log("id", id);
+      
       if (index !== -1 && index < array.length - 1) {
         // Verifica se o elemento foi encontrado no array e não está na última posição
         const novoArray = [...array]; // Cria uma cópia do array original
@@ -1004,7 +1004,7 @@ const FlowBuilderSingleBlockModal = ({
             },
             error(err) {
               alert("erro");
-              console.log(err.message);
+              
             },
           });
         } else {
@@ -1023,7 +1023,7 @@ const FlowBuilderSingleBlockModal = ({
               seq: elementsSeq,
               elements: handleElements(null),
             };
-            console.log("QUI", mountData);
+            
             onUpdate({
               ...data,
               data: mountData,
@@ -1034,7 +1034,7 @@ const FlowBuilderSingleBlockModal = ({
 
             return;
           } catch (e) {
-            console.log(e);
+            
             setLoading(false);
           }
           return;
@@ -1060,7 +1060,7 @@ const FlowBuilderSingleBlockModal = ({
             setLoading(false);
           })
           .catch((error) => {
-            console.log(error);
+            
           });
       }, 1500);
     } else if (open === "create") {
@@ -1084,7 +1084,7 @@ const FlowBuilderSingleBlockModal = ({
             },
             error(err) {
               alert("erro");
-              console.log(err.message);
+              
             },
           });
         } else {
@@ -1132,7 +1132,7 @@ const FlowBuilderSingleBlockModal = ({
             setLoading(false);
           })
           .catch((error) => {
-            console.log(error);
+            
           });
       }, 1500);
     }

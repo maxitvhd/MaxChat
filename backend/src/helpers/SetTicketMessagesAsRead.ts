@@ -10,7 +10,7 @@ import ShowWhatsAppService from "../services/WhatsappService/ShowWhatsAppService
 const SetTicketMessagesAsRead = async (ticket: Ticket): Promise<void> => {
 
   if (ticket.whatsappId) {
-    // console.log("SETTING MESSAGES AS READ", ticket.whatsappId)
+    // 
     const whatsapp = await ShowWhatsAppService(
       ticket.whatsappId,
 

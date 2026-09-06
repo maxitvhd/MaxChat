@@ -73,13 +73,13 @@ const FlowBuilderTicketModal = ({
                     const { data: old } = await api.get("/queue");
                     setQueues(old)
                     const queue = old.find((item) => item.id === data.data.id)
-                    console.log('queue', queue)
+                    
                     if (queue) {
                         setQueueSelected(queue.id)
                     }
                     setActiveModal(true)
                 } catch (error) {
-                    console.log(error)
+                    
                 }
             })();
 
@@ -90,7 +90,7 @@ const FlowBuilderTicketModal = ({
                     setQueues(data)
                     setActiveModal(true)
                 } catch (error) {
-                    console.log(error)
+                    
                 }
             })()
         }

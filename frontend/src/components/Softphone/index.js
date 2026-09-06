@@ -32,7 +32,7 @@ const setRingVolume =(newValue)=>{
 return true
 }
 
-console.log(setConnectOnStartToLocalStorage)
+
 
 function SoftPhone() {
   return (

@@ -42,7 +42,7 @@ const SendWhatsAppReaction = async ({
 
     const msgFound = JSON.parse(messageToReact.dataJson);
 
-    console.log(reactionType);
+    
 
     const msg = await wbot.sendMessage(number, {
       react: {
@@ -56,7 +56,7 @@ const SendWhatsAppReaction = async ({
     return msg;
   } catch (err) {
     Sentry.captureException(err);
-    console.log(err);
+    
     throw new AppError("ERR_SENDING_WAPP_REACTION");
   }
 };

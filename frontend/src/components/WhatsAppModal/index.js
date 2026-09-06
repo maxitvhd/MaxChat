@@ -250,13 +250,13 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
         const { data } = await api.get(`whatsapp/${whatsAppId}?session=0`);
         if (data && data?.flowIdNotPhrase) {
           const { data: flowDefault } = await api.get(`flowbuilder/${data.flowIdNotPhrase}`)
-          console.log(flowDefault?.flow.id)
+          
           const selectedFlowIdNotPhrase = flowDefault?.flow.id
           setFlowIdNotPhrase(selectedFlowIdNotPhrase)
         }
         if (data && data?.flowIdWelcome) {
           const { data: flowDefault } = await api.get(`flowbuilder/${data.flowIdWelcome}`)
-          console.log(flowDefault?.flow.id)
+          
           const selectedFlowIdWelcome = flowDefault?.flow.id
           setFlowIdWelcome(selectedFlowIdWelcome)
         }
@@ -330,12 +330,12 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
   }
 
   const handleChangeFlowIdNotPhrase = (e) => {
-    console.log(e.target.value)
+    
     setFlowIdNotPhrase(e.target.value)
   }
 
   const handleChangeFlowIdWelcome = (e) => {
-    console.log(e.target.value)
+    
     setFlowIdWelcome(e.target.value)
   }
 

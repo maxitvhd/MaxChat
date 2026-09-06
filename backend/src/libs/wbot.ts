@@ -199,7 +199,7 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
 
         setTimeout(async () => {
           const wpp = await Whatsapp.findByPk(whatsapp.id);
-          // console.log("Status:::::",wpp.status)
+          // 
           if (wpp?.importOldMessages && wpp.status === "CONNECTED") {
             let dateOldLimit = new Date(wpp.importOldMessages).getTime();
             let dateRecentLimit = new Date(wpp.importRecentMessages).getTime();
@@ -288,7 +288,7 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
                     action: "update",
                     session: wpp
                   });
-                //console.log(JSON.stringify(wpp, null, 2));
+                //
               }, 500);
 
               setTimeout(async () => {
@@ -308,14 +308,14 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
                     const dataLimite = +add(ultimoStatus, { seconds: +45 }).getTime();
 
                     if (dataLimite < new Date().getTime()) {
-                      //console.log("Pronto para come?ar")
+                      //
                       ImportWhatsAppMessageService(wpp.id)
                       wpp.update({
                         statusImportMessages: "Running"
                       })
 
                     } else {
-                      //console.log("Aguardando inicio")
+                      //
                     }
                   }
                 }
@@ -343,7 +343,7 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
             );
 
             if (connection === "close") {
-              console.log("DESCONECTOU", JSON.stringify(lastDisconnect, null, 2))
+              
               logger.info(
                 `Socket  ${name} Connection Update ${connection || ""} ${lastDisconnect ? lastDisconnect.error.message : ""
                 }`
@@ -464,7 +464,7 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
       })();
     } catch (error) {
       Sentry.captureException(error);
-      console.log(error);
+      
       reject(error);
     }
   });

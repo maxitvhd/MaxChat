@@ -127,7 +127,7 @@ export const getMessageOptions = async (
     return options;
   } catch (e) {
     Sentry.captureException(e);
-    console.log(e);
+    
     return null;
   }
 };
@@ -149,7 +149,7 @@ const SendWhatsAppMedia = async ({
     let bodyTicket = "";
     const bodyMedia = ticket ? formatBody(body, ticket) : body;
 
-    // console.log(media.mimetype)
+    // 
     if (typeMessage === "video") {
       options = {
         video: fs.readFileSync(pathMedia),
@@ -266,9 +266,9 @@ const SendWhatsAppMedia = async ({
 
     return sentMessage;
   } catch (err) {
-    console.log(`ERRO AO ENVIAR MIDIA ${ticket.id} media ${media.originalname}`)
+    
     Sentry.captureException(err);
-    console.log(err);
+    
     throw new AppError("ERR_SENDING_WAPP_MSG");
   }
 };

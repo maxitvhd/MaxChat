@@ -14,7 +14,7 @@ import User from "../models/User";
 export const forgotPassword = async (req: Request, res: Response): Promise<Response> => {
   const { email } = req.body;
 
-  console.log('Forgot password request received:', { email });
+  
 
   const user = await User.findOne({ where: { email } });
   if (!user) {
@@ -29,12 +29,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<Respo
   user.passwordResetExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
   await user.save();
 
-  console.log('Password reset token generated:', {
-    userId: user.id,
-    email,
-    token,
-    expires: user.passwordResetExpires,
-  });
+  
 
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -53,7 +48,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<Respo
       subject: "Redefinição de Senha",
       text: `Clique no link para redefinir sua senha: ${resetUrl}`,
     });
-    console.log('Password reset email sent to:', email);
+    
   } catch (error) {
     console.error('Failed to send password reset email:', error);
     throw new AppError("Erro ao enviar e-mail de redefinição.", 500);
@@ -140,7 +135,7 @@ export const remove = async (
 export const resetPassword = async (req: Request, res: Response): Promise<Response> => {
   const { token, newPassword } = req.body;
 
-  console.log('Reset password request received:', { token, newPassword: '***' }); // Hide password in logs
+  // Hide password in logs
 
   const user = await User.findOne({
     where: {
@@ -164,14 +159,14 @@ export const resetPassword = async (req: Request, res: Response): Promise<Respon
     throw new AppError("Token inválido ou expirado.", 400);
   }
 
-  console.log('User found for password reset:', { userId: user.id, email: user.email });
+  
 
   user.password = newPassword;
   user.passwordResetToken = null;
   user.passwordResetExpires = null;
   await user.save();
 
-  console.log('Password reset successful for user:', user.id);
+  
 
   return res.status(200).json({ message: "Senha redefinida com sucesso." });
 };
