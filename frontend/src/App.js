@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import api from "./services/api";
 import "react-toastify/dist/ReactToastify.css";
-import { QueryClient, QueryClientProvider } from "react-query";
 import { ptBR } from "@material-ui/core/locale";
 import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import { useMediaQuery } from "@material-ui/core";
@@ -14,8 +13,6 @@ import defaultLogoLight from "./assets/logo.png";
 import defaultLogoDark from "./assets/logo-black.png";
 import defaultLogoFavicon from "./assets/favicon.ico";
 import useSettings from "./hooks/useSettings";
-
-const queryClient = new QueryClient();
 
 const App = () => {
   const [locale, setLocale] = useState();
@@ -151,9 +148,9 @@ const App = () => {
         // Espera pela resposta do usuário
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
-            console.log('Usuário aceitou instalar o app');
+            // aceito
           } else {
-            console.log('Usuário recusou instalar o app');
+            // recusado
           }
           // Limpa o prompt armazenado, só pode ser usado uma vez
           setDeferredPrompt(null);
@@ -176,52 +173,46 @@ const App = () => {
   }, [mode]);
 
   useEffect(() => {
-    console.log("|=========== handleSaveSetting ==========|")
-    console.log("APP START")
-    console.log("|========================================|")
-   
-    
     getPublicSetting("primaryColorLight")
       .then((color) => {
         setPrimaryColorLight(color || "#0000FF");
       })
-      .catch((error) => {
-        console.log("Error reading setting", error);
+      .catch(() => {
+        // ignorado
       });
     getPublicSetting("primaryColorDark")
       .then((color) => {
         setPrimaryColorDark(color || "#39ACE7");
       })
-      .catch((error) => {
-        console.log("Error reading setting", error);
+      .catch(() => {
+        // ignorado
       });
     getPublicSetting("appLogoLight")
       .then((file) => {
         setAppLogoLight(file ? getBackendUrl() + "/public/" + file : defaultLogoLight);
       })
-      .catch((error) => {
-        console.log("Error reading setting", error);
+      .catch(() => {
+        // ignorado
       });
     getPublicSetting("appLogoDark")
       .then((file) => {
         setAppLogoDark(file ? getBackendUrl() + "/public/" + file : defaultLogoDark);
       })
-      .catch((error) => {
-        console.log("Error reading setting", error);
+      .catch(() => {
+        // ignorado
       });
     getPublicSetting("appLogoFavicon")
       .then((file) => {
         setAppLogoFavicon(file ? getBackendUrl() + "/public/" + file : defaultLogoFavicon);
       })
-      .catch((error) => {
-        console.log("Error reading setting", error);
+      .catch(() => {
+        // ignorado
       });
     getPublicSetting("appName")
       .then((name) => {
         setAppName(name || "MULTIZAP FLOW");
       })
-      .catch((error) => {
-        console.log("!==== Erro ao carregar temas: ====!", error);
+      .catch(() => {
         setAppName("MULTIZAP FLOW");
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -239,7 +230,7 @@ const App = () => {
         const { data } = response;
         window.localStorage.setItem("frontendVersion", data.version);
       } catch (error) {
-        console.log("Error fetching data", error);
+        // ignorado
       }
     }
     fetchVersionData();
@@ -250,11 +241,9 @@ const App = () => {
       <Favicon url={appLogoFavicon ? getBackendUrl() + "/public/" + appLogoFavicon : defaultLogoFavicon} />
       <ColorModeContext.Provider value={{ colorMode }}>
         <ThemeProvider theme={theme}>
-          <QueryClientProvider client={queryClient}>
-            <ActiveMenuProvider>
+<ActiveMenuProvider>
               <Routes />
             </ActiveMenuProvider>
-          </QueryClientProvider>
         </ThemeProvider>
       </ColorModeContext.Provider>
     </>
