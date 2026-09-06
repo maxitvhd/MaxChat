@@ -381,15 +381,13 @@ export const remove = async (
 export const closeAll = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
   const { status }: TicketData = req.body;
-  const io = getIO();
 
   const { rows: tickets } = await Ticket.findAndCountAll({
     where: { companyId: companyId, status: status },
     order: [["updatedAt", "DESC"]]
   });
 
-  tickets.forEach(async ticket => {
-
+  const updateTicket = async (ticket: Ticket) => {
     const ticketData = {
       status: "closed",
       userId: ticket.userId || null,
@@ -399,9 +397,14 @@ export const closeAll = async (req: Request, res: Response): Promise<Response> =
       sendFarewellMessage: false
     };
 
-    await UpdateTicketService({ ticketData, ticketId: ticket.id, companyId })
+    await UpdateTicketService({ ticketData, ticketId: ticket.id, companyId });
+  };
 
-  });
+  const BATCH_SIZE = 10;
+  for (let i = 0; i < tickets.length; i += BATCH_SIZE) {
+    const batch = tickets.slice(i, i + BATCH_SIZE);
+    await Promise.all(batch.map(ticket => updateTicket(ticket)));
+  }
 
   return res.status(200).json();
 };

@@ -5013,11 +5013,24 @@ const verifyRecentCampaign = async (
   }
   if (!message.key.fromMe) {
     const number = message.key.remoteJid.replace(/\D/g, "");
-    const campaigns = await Campaign.findAll({
-      where: { companyId, status: "EM_ANDAMENTO", confirmation: true }
-    });
-    if (campaigns) {
-      const ids = campaigns.map(c => c.id);
+    const cacheKey = `company:${companyId}:active-campaign-ids`;
+    const cached = await cacheLayer.get(cacheKey);
+    let ids: number[] = [];
+    if (cached) {
+      try {
+        ids = JSON.parse(cached);
+      } catch (err) {
+        ids = [];
+      }
+    } else {
+      const campaigns = await Campaign.findAll({
+        where: { companyId, status: "EM_ANDAMENTO", confirmation: true },
+        attributes: ["id"]
+      });
+      ids = campaigns.map(c => c.id);
+      await cacheLayer.set(cacheKey, JSON.stringify(ids), "EX", 10);
+    }
+    if (ids.length) {
       const campaignShipping = await CampaignShipping.findOne({
         where: {
           campaignId: { [Op.in]: ids },
