@@ -269,6 +269,10 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
                 dataMessages[whatsappId].unshift(...filteredDateMessages);
               }
 
+              if (dataMessages[whatsappId].length > 50000) {
+                dataMessages[whatsappId] = dataMessages[whatsappId].slice(0, 50000);
+              }
+
               setTimeout(async () => {
                 const wpp = await Whatsapp.findByPk(whatsappId);
 
@@ -343,6 +347,7 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
             );
 
             if (connection === "close") {
+              dataMessages[id] = [];
               
               logger.info(
                 `Socket  ${name} Connection Update ${connection || ""} ${lastDisconnect ? lastDisconnect.error.message : ""

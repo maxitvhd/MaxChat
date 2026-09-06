@@ -1687,7 +1687,7 @@ export async function startQueueProcess() {
     "Verify",
     {},
     {
-      repeat: { cron: "0 * * * * *", key: "verify" },
+      repeat: { cron: "*/5 * * * * *", key: "verify" },
       removeOnComplete: true
     }
   );
@@ -1714,7 +1714,7 @@ export async function startQueueProcess() {
     "VerifyQueueStatus",
     {},
     {
-      repeat: { cron: "0 * * * * *", key: "verify-queue" },
+      repeat: { cron: "*/30 * * * * *", key: "verify-queue" },
       removeOnComplete: true
     }
   );

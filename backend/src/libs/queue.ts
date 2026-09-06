@@ -18,7 +18,7 @@ const queueOptions = {
     removeOnComplete: true,
   },
   limiter: {
-    max: config.webhook.limiter.max,
+    max: 5,
     duration: config.webhook.limiter.duration,
   },
 };
