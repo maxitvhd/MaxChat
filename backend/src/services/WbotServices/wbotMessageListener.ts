@@ -4250,7 +4250,7 @@ const handleMessage = async (
         
 
         io.of(String(companyId))
-          // .to(String(ticket.id))
+          .to(String(ticket.id))
           .emit(`company-${companyId}-appMessage`, {
             action: "update",
             message: messageToUpdate
@@ -4993,7 +4993,7 @@ const handleMsgAck = async (
 
     await messageToUpdate.update({ ack: chat });
     io.of(messageToUpdate.companyId.toString())
-      // .to(messageToUpdate.ticketId.toString())
+      .to(messageToUpdate.ticketId.toString())
       .emit(`company-${messageToUpdate.companyId}-appMessage`, {
         action: "update",
         message: messageToUpdate

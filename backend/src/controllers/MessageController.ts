@@ -93,10 +93,12 @@ export const addReaction = async (req: Request, res: Response): Promise<Response
     });*/
 
     const io = getIO();
-    io.to(message.ticketId.toString()).emit(`company-${companyId}-appMessage`, {
-      action: "update",
-      message
-    });
+    io.of(String(companyId))
+      .to(message.ticketId.toString())
+      .emit(`company-${companyId}-appMessage`, {
+        action: "update",
+        message
+      });
 
     return res.status(200).send({
       message: 'Reação adicionada com sucesso!',
@@ -365,7 +367,7 @@ export const remove = async (
       }
     });
     io.of(String(companyId))
-      // .to(message.ticketId.toString())
+      .to(message.ticketId.toString())
       .emit(`company-${companyId}-appMessage`, {
         action: "delete",
         message
@@ -373,7 +375,7 @@ export const remove = async (
   }
 
   io.of(String(companyId))
-    // .to(message.ticketId.toString())
+    .to(message.ticketId.toString())
     .emit(`company-${companyId}-appMessage`, {
       action: "update",
       message
@@ -483,7 +485,7 @@ export const edit = async (req: Request, res: Response): Promise<Response> => {
 
   const io = getIO();
   io.of(String(companyId))
-    // .to(String(ticket.id))
+    .to(String(ticket.id))
     .emit(`company-${companyId}-appMessage`, {
       action: "update",
       message
