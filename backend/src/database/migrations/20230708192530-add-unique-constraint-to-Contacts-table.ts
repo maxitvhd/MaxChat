@@ -2,9 +2,10 @@ import { QueryInterface } from "sequelize";
 
 module.exports = {
   up: (queryInterface: QueryInterface) => {
-    return queryInterface.addConstraint("Contacts", ["number", "companyId"], {
+    return queryInterface.addConstraint("Contacts", {
       type: "unique",
-      name: "number_companyid_unique"
+      name: "number_companyid_unique",
+      fields: ["number", "companyId"]
     });
   },
 

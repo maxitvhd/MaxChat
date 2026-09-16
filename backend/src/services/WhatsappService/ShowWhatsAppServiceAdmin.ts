@@ -30,8 +30,8 @@ const ShowWhatsAppServiceAdmin = async (
       }
     ],
     order: [
-      ["queues", "orderQueue", "ASC"],
-      ["queues", "chatbots", "id", "ASC"]
+      [{ model: Queue, as: "queues" }, "orderQueue", "ASC"],
+      [{ model: Queue, as: "queues" }, { model: Chatbot, as: "chatbots" }, "id", "ASC"]
     ]
   };
   const whatsapp = await Whatsapp.findByPk(id, findOptions);

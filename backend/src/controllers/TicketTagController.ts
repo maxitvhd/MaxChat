@@ -11,7 +11,10 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
 
   try {
-    const ticketTag = await TicketTag.create({ ticketId, tagId });
+    const ticketTag = await TicketTag.create({
+      ticketId: Number(ticketId),
+      tagId: Number(tagId)
+    });
 
     const ticket = await ShowTicketService(ticketId, companyId);
 

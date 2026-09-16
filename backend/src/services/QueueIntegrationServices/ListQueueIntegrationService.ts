@@ -20,13 +20,10 @@ const ListQueueIntegrationService = async ({
 }: Request): Promise<Response> => {
   let whereCondition: Filterable["where"] = {
     [Op.or]: [
-      {
-        "$QueueIntegrations.name$": Sequelize.where(
-          Sequelize.fn("LOWER", Sequelize.col("QueueIntegrations.name")),
-          "LIKE",
-          `%${searchParam.toLowerCase()}%`
-        )
-      }     
+      Sequelize.where(
+        Sequelize.fn("LOWER", Sequelize.col("QueueIntegrations.name")),
+        { [Op.like]: `%${searchParam.toLowerCase()}%` }
+      )     
     ]
   };
 

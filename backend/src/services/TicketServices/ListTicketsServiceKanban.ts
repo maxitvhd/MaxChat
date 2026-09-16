@@ -118,21 +118,18 @@ const ListTicketsServiceKanban = async ({
     whereCondition = {
       ...whereCondition,
       [Op.or]: [
-        {
-          "$contact.name$": where(
-            fn("LOWER", col("contact.name")),
-            "LIKE",
-            `%${sanitizedSearchParam}%`
-          )
-        },
-        { "$contact.number$": { [Op.like]: `%${sanitizedSearchParam}%` } },
-        {
-          "$message.body$": where(
-            fn("LOWER", col("body")),
-            "LIKE",
-            `%${sanitizedSearchParam}%`
-          )
-        }
+        where(
+          fn("LOWER", col("contact.name")),
+          { [Op.like]: `%${sanitizedSearchParam}%` }
+        ),
+        where(
+          col("contact.number"),
+          { [Op.like]: `%${sanitizedSearchParam}%` }
+        ),
+        where(
+          fn("LOWER", col("body")),
+          { [Op.like]: `%${sanitizedSearchParam}%` }
+        )
       ]
     };
   }

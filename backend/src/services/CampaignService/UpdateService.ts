@@ -53,7 +53,13 @@ const UpdateService = async (data: Data): Promise<Campaign> => {
     data.status = "PROGRAMADA";
   }
 
-  await record.update(data);
+  await record.update({
+    ...data,
+    id: Number(data.id),
+    userId: Number(data.userId),
+    queueId: Number(data.queueId),
+    scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : undefined
+  });
 
   await record.reload({
     include: [

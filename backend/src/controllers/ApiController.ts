@@ -370,7 +370,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
     const { dateToClient } = useDate();
 
     const hoje: string = dateToClient(new Date())
-    const timestamp = moment().format();
+    const timestamp = moment().toDate();
 
     let exist = await ApiUsages.findOne({
       where: {
@@ -517,7 +517,7 @@ export const indexImage = async (req: Request, res: Response): Promise<Response>
     const { dateToClient } = useDate();
 
     const hoje: string = dateToClient(new Date())
-    const timestamp = moment().format();
+    const timestamp = moment().toDate();
 
     const exist = await ApiUsages.findOne({
       where: {
@@ -576,7 +576,7 @@ export const checkNumber = async (req: Request, res: Response): Promise<Response
         const { dateToClient } = useDate();
 
         const hoje: string = dateToClient(new Date())
-        const timestamp = moment().format();
+const timestamp = moment().toDate();
 
         const exist = await ApiUsages.findOne({
           where: {

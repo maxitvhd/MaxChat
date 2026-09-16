@@ -680,7 +680,7 @@ const UpdateTicketService = async ({
 
     status = queue && queue.closeTicket ? "closed" : status;
 
-    await ticket.update({
+    const updateData = {
       status,
       queueId,
       userId,
@@ -693,10 +693,9 @@ const UpdateTicketService = async ({
       typebotSessionId: !useIntegration ? null : ticket.typebotSessionId,
       typebotStatus: useIntegration,
       unreadMessages
-    });
+    };
 
-    ticketTraking.queuedAt = moment().toDate();
-    ticketTraking.queueId = queueId;
+    await ticket.update(updateData);
 
     await ticket.reload();
 

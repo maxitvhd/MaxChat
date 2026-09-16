@@ -108,7 +108,7 @@ const TicketsQueuesService = async ({
     distinct: true,
     subQuery: false,
     order: [
-      ["user", "name", "ASC"],
+      [{ model: User, as: "user" }, "name", "ASC"],
       ["updatedAt", "DESC"],
     ]
   });

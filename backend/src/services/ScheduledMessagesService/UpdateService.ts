@@ -13,17 +13,17 @@ interface ScheduleData {
   valor_intervalo: string;
   mensagem: string;
   tipo_dias_envio: string;
-  mostrar_usuario_mensagem: string;
+  mostrar_usuario_mensagem: boolean;
   criar_ticket: boolean;
-  contatos: [];
-  tags: [];
-  companyId: number;
+  contatos: String[];
+  tags: String[];
+  companyId?: number;
   nome: string;
   tipo_arquivo: string;
   usuario_envio: string;
   enviar_quantas_vezes: string;
-  mediaName: string,
-  mediaPath: string
+  mediaName?: string,
+  mediaPath?: string
 }
 
 interface Request {
@@ -58,22 +58,24 @@ const UpdateUserService = async ({
     enviar_quantas_vezes,
   } = scheduleData;
 
-  let data = {
+  const mostraUsuarioMensagem = String(mostrar_usuario_mensagem) === "true";
+
+  let data: ScheduleData = {
     data_mensagem_programada,
     id_conexao,
     intervalo,
     valor_intervalo,
     mensagem,
     tipo_dias_envio,
-    mostrar_usuario_mensagem,
+    mostrar_usuario_mensagem: mostraUsuarioMensagem,
     criar_ticket,
     contatos: String(contatos).split(','),
     tags: String(tags).split(','),
     nome,
     tipo_arquivo,
-    usuario_envio: mostrar_usuario_mensagem == 'true' ? usuario_envio : null,
+    usuario_envio: (mostraUsuarioMensagem ? usuario_envio : null) as string,
     enviar_quantas_vezes
-  } as ScheduleData;
+  };
 
 
   if (!!mediaName && !!mediaPath) {

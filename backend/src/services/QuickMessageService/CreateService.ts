@@ -14,7 +14,16 @@ interface Data {
 }
 
 const CreateService = async (data: Data): Promise<QuickMessage> => {
-  const { shortcode, message, isMedia } = data;
+  const {
+    shortcode,
+    message,
+    isMedia,
+    companyId,
+    userId,
+    geral,
+    mediaPath,
+    visao
+  } = data;
 
   const ticketnoteSchema = Yup.object().shape({
     shortcode: Yup.string()
@@ -31,7 +40,15 @@ const CreateService = async (data: Data): Promise<QuickMessage> => {
     throw new AppError(err.message);
   }
 
-  const record = await QuickMessage.create(data);
+  const record = await QuickMessage.create({
+    shortcode,
+    message,
+    companyId: Number(companyId),
+    userId: Number(userId),
+    geral,
+    visao,
+    ...(mediaPath !== undefined ? { mediaPath } : {})
+  });
 
   return record;
 };

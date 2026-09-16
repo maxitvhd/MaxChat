@@ -24,7 +24,11 @@ const CreateService = async (data: Data): Promise<Announcement> => {
     throw new AppError(err.message);
   }
 
-  const record = await Announcement.create(data);
+  const record = await Announcement.create({
+    ...data,
+    priority: Number(data.priority),
+    status: String(data.status) === "true"
+  });
 
   return record;
 };

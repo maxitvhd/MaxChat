@@ -6,8 +6,7 @@ import Ticket from "../../models/Ticket";
 import ShowTicketService from "../TicketServices/ShowTicketService";
 import Queue from "../../models/Queue";
 
-import { Sequelize } from "sequelize-typescript";
-import { QueryTypes } from "sequelize";
+import { Sequelize, QueryTypes } from "sequelize";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const dbConfig = require("../../config/database");

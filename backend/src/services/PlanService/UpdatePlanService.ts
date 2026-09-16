@@ -31,7 +31,10 @@ const UpdatePlanService = async (planData: PlanData): Promise<Plan> => {
     throw new AppError("ERR_NO_PLAN_FOUND", 404);
   }
 
-  await plan.update(planData);
+  await plan.update({
+    ...planData,
+    id: id === "" || id === undefined || id === null ? undefined : Number(id)
+  });
 
   return plan;
 };

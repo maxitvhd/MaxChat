@@ -532,8 +532,8 @@ export const handleMessage = async (
           }
         ],
         order: [
-          ["queues", "id", "ASC"],
-          ["queues", "chatbots", "id", "ASC"]
+          [{ model: Queue, as: "queues" }, "id", "ASC"],
+          [{ model: Queue, as: "queues" }, { model: Chatbot, as: "chatbots" }, "id", "ASC"]
         ]
       });
 

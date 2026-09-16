@@ -11,7 +11,7 @@ interface QueueData {
   color?: string;
   greetingMessage?: string;
   outOfHoursMessage?: string;
-  schedules?: any[];
+  schedules?: [];
   chatbots?: Chatbot[];
   orderQueue?: number;
   ativarRoteador?: boolean;

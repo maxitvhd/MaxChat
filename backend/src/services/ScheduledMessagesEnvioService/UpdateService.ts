@@ -2,6 +2,7 @@ import * as Yup from "yup";
 
 import AppError from "../../errors/AppError";
 import ScheduledMessages from "../../models/ScheduledMessages";
+import ScheduledMessagesEnvio from "../../models/ScheduledMessagesEnvio";
 import ShowService from "./ShowService";
 import Contact from "../../models/Contact";
 import Tag from "../../models/Tag";
@@ -64,7 +65,7 @@ const UpdateUserService = async ({
     throw new AppError(err.message);
   }
 
-  await schedule.update({
+  await (schedule as unknown as ScheduledMessagesEnvio).update({
     mediaPath,
     mediaName,
     mensagem,

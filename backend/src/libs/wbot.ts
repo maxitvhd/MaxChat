@@ -217,7 +217,7 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
             const statusImportMessages = new Date().getTime();
 
             await wpp.update({
-              statusImportMessages
+              statusImportMessages: String(statusImportMessages)
             });
             wsocket.ev.on("messaging-history.set", async (messageSet: any) => {
               //if(messageSet.isLatest){
@@ -225,7 +225,7 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
               const statusImportMessages = new Date().getTime();
 
               await wpp.update({
-                statusImportMessages
+                statusImportMessages: String(statusImportMessages)
               });
               const whatsappId = whatsapp.id;
               let filteredMessages = messageSet.messages

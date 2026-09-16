@@ -205,7 +205,7 @@ class Whatsapp extends Model<Whatsapp> {
   @Column({
     type: DataType.JSONB
   })
-  schedules: [];
+  schedules: any[];
 
   @ForeignKey(() => Prompt)
   @Column

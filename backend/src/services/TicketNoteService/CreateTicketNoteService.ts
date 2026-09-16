@@ -12,7 +12,7 @@ interface TicketNoteData {
 const CreateTicketNoteService = async (
   ticketNoteData: TicketNoteData
 ): Promise<TicketNote> => {
-  const { note } = ticketNoteData;
+  const { note, userId, contactId, ticketId } = ticketNoteData;
 
   const ticketnoteSchema = Yup.object().shape({
     note: Yup.string()
@@ -26,7 +26,12 @@ const CreateTicketNoteService = async (
     throw new AppError(err.message);
   }
 
-  const ticketNote = await TicketNote.create(ticketNoteData);
+  const ticketNote = await TicketNote.create({
+    note,
+    userId: Number(userId),
+    contactId: Number(contactId),
+    ticketId: Number(ticketId)
+  });
 
   return ticketNote;
 };

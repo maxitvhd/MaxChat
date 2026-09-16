@@ -9,9 +9,9 @@ interface Request {
 }
 
 interface Wallet {
-  walletId: number | string;
-  contactId: number | string;
-  companyId: number | string;
+  walletId: number;
+  contactId: number;
+  companyId: number;
 }
 
 const UpdateContactWalletsService = async ({
@@ -28,13 +28,13 @@ const UpdateContactWalletsService = async ({
 
   const contactWallets: Wallet[] = [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wallets.forEach((wallet: any) => {
-    contactWallets.push({
-      walletId: !wallet.id ? wallet : wallet.id,
-      contactId,
-      companyId
+wallets.forEach((wallet: any) => {
+      contactWallets.push({
+        walletId: Number(!wallet.id ? wallet : wallet.id),
+        contactId: Number(contactId),
+        companyId: Number(companyId)
+      });
     });
-  });
 
   await ContactWallet.bulkCreate(contactWallets);
 

@@ -57,7 +57,6 @@ class ApiUsages extends Model<ApiUsages> {
 
     @UpdatedAt
     updatedAt: Date;
-    dataValues: string | PromiseLike<string>;
 
 }
 

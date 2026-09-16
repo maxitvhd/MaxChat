@@ -54,7 +54,6 @@ class Integrations extends Model<Integrations> {
     @UpdatedAt
     @Column(DataType.DATE(6))
     updatedAt: Date;
-    dataValues: string | PromiseLike<string>;
 
     @Column(DataType.TEXT)
     token: string;

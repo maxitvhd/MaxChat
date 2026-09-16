@@ -32,20 +32,14 @@ const ListService = async ({
   if (searchParam) {
     whereCondition = {
       [Op.or]: [
-        {
-          "$Schedule.body$": where(
-            fn("LOWER", col("Schedule.body")),
-            "LIKE",
-            `%${searchParam.toLowerCase()}%`
-          )
-        },
-        {
-          "$Contact.name$": where(
-            fn("LOWER", fn("unaccent", col("contact.name"))),
-            "LIKE",
-            `%${searchParam.toLowerCase()}%`
-          )
-        },
+        where(
+          fn("LOWER", col("Schedule.body")),
+          { [Op.like]: `%${searchParam.toLowerCase()}%` }
+        ),
+        where(
+          fn("LOWER", fn("unaccent", col("contact.name"))),
+          { [Op.like]: `%${searchParam.toLowerCase()}%` }
+        ),
       ],
     }
   }

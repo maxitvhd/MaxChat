@@ -356,8 +356,6 @@ export const getBodyMessage = (msg: proto.IWebMessageInfo): string | null => {
   try {
     let type = getTypeMessage(msg);
 
-    if (type === undefined) 
-
     const types = {
       conversation: msg.message?.conversation,
       imageMessage: msg.message?.imageMessage?.caption,

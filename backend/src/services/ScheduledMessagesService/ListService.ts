@@ -25,20 +25,14 @@ const ListService = async ({
   if (!!searchParam) {
     whereCondition = {
       [Op.or]: [
-        {
-          "$Schedule.body$": Sequelize.where(
-            Sequelize.fn("LOWER", Sequelize.col("Schedule.message")),
-            "LIKE",
-            `%${searchParam.toLowerCase()}%`
-          )
-        },
-        {
-          "$Contact.name$": Sequelize.where(
-            Sequelize.fn("LOWER", Sequelize.col("contact.name")),
-            "LIKE",
-            `%${searchParam.toLowerCase()}%`
-          )
-        },
+        Sequelize.where(
+          Sequelize.fn("LOWER", Sequelize.col("Schedule.message")),
+          { [Op.like]: `%${searchParam.toLowerCase()}%` }
+        ),
+        Sequelize.where(
+          Sequelize.fn("LOWER", Sequelize.col("contact.name")),
+          { [Op.like]: `%${searchParam.toLowerCase()}%` }
+        ),
       ],
     }
   }

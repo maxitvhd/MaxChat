@@ -414,42 +414,20 @@ const ListTicketsService = async ({
           whereCondition = {
             ...whereCondition,
             [Op.or]: [
-              {
-                "$contact.name$": where(
-                  fn("LOWER", fn("unaccent", col("contact.name"))),
-                  "LIKE",
-                  `%${sanitizedSearchParam}%`
-                )
-              },
-              { "$contact.number$": { [Op.like]: `%${sanitizedSearchParam}%` } },
-              {
-                "$message.body$": where(
-                  fn("LOWER", fn("unaccent", col("body"))),
-                  "LIKE",
-                  `%${sanitizedSearchParam}%`
-                )
-              }
+              where(
+                col("contact.number"),
+                { [Op.like]: `%${sanitizedSearchParam}%` }
+              )
             ]
           };
         } else {
           whereCondition = {
             ...whereCondition,
             [Op.or]: [
-              {
-                "$contact.name$": where(
-                  fn("LOWER", fn("unaccent", col("contact.name"))),
-                  "LIKE",
-                  `%${sanitizedSearchParam}%`
-                )
-              },
-              { "$contact.number$": { [Op.like]: `%${sanitizedSearchParam}%` } },
-              // {
-              //   "$message.body$": where(
-              //     fn("LOWER", fn("unaccent", col("body"))),
-              //     "LIKE",
-              //     `%${sanitizedSearchParam}%`
-              //   )
-              // }
+              where(
+                col("contact.number"),
+                { [Op.like]: `%${sanitizedSearchParam}%` }
+              )
             ]
           };
         }

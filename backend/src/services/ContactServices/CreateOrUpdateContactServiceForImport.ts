@@ -1,7 +1,8 @@
 import { getIO } from "../../libs/socket";
 import Contact from "../../models/Contact";
+import ContactCustomField from "../../models/ContactCustomField";
 
-interface ExtraInfo {
+interface ExtraInfo extends ContactCustomField {
   name: string;
   value: string;
 }
@@ -51,7 +52,6 @@ const CreateOrUpdateContactServiceForImport = async ({
       number,
       profilePicUrl,
       email,
-      commandBot,
       isGroup,
       extraInfo
     });

@@ -1,7 +1,6 @@
 import AppError from "../../errors/AppError";
 import Message from "../../models/Message";
-import { Sequelize } from "sequelize-typescript";
-import { QueryTypes } from "sequelize";
+import { Sequelize, QueryTypes } from "sequelize";
 
 interface Request {
     companyId: number;

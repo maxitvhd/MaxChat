@@ -25,13 +25,10 @@ const ListUsersService = async ({
 }: Request): Promise<Response> => {
   const whereCondition = {
     [Op.or]: [
-      {
-        "$User.name$": Sequelize.where(
-          Sequelize.fn("LOWER", Sequelize.col("User.name")),
-          "LIKE",
-          `%${searchParam.toLowerCase()}%`
-        )
-      },
+      Sequelize.where(
+        Sequelize.fn("LOWER", Sequelize.col("User.name")),
+        { [Op.like]: `%${searchParam.toLowerCase()}%` }
+      ),
       { email: { [Op.like]: `%${searchParam.toLowerCase()}%` } }
     ],
     companyId: {
