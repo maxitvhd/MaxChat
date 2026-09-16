@@ -242,7 +242,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 // };
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
-  const { userId } = req.params;
+  const userId = String(req.params.userId);
   const { companyId } = req.user;
 
   const user = await ShowUserService(userId, companyId);
@@ -251,7 +251,7 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const showEmail = async (req: Request, res: Response): Promise<Response> => {
-  const { email } = req.params;
+  const email = String(req.params.email);
 
   const user = await APIShowEmailUserService(email);
 
@@ -272,7 +272,7 @@ export const update = async (
   }
 
   const { id: requestUserId, companyId } = req.user;
-  const { userId } = req.params;
+  const userId = String(req.params.userId);
   const userData = req.body;
 
   const user = await UpdateUserService({
@@ -297,7 +297,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { userId } = req.params;
+  const userId = String(req.params.userId);
   const { companyId, id, profile } = req.user;
 
   if (profile !== "admin") {
@@ -344,7 +344,7 @@ export const mediaUpload = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { userId } = req.params;
+  const userId = String(req.params.userId);
   const { companyId } = req.user;
   const files = req.files as Express.Multer.File[];
   const file = head(files);
@@ -372,7 +372,7 @@ export const mediaUpload = async (
 };
 
 export const toggleChangeWidht = async (req: Request, res: Response): Promise<Response> => {
-  var { userId } = req.params;
+  var userId = String(req.params.userId);
   const { defaultTicketsManagerWidth } = req.body;
 
   const { companyId } = req.user;
@@ -412,7 +412,7 @@ export const getUserCreationStatus = async (
 };
 export const updateLanguage = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { userId } = req.params;
+    const userId = String(req.params.userId);
     const { language } = req.body;
 
     // Validação básica do idioma

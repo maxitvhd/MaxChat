@@ -12,8 +12,8 @@ export const mediaUpload = async (req: Request, res: Response): Promise<Response
   
     try {
   
-      const whatsapp = await Whatsapp.findByPk(whatsappId);
-  
+const whatsapp = await Whatsapp.findByPk(Number(whatsappId));
+
       whatsapp.greetingMediaAttachment = file.filename;
   
       await whatsapp.save();
@@ -32,7 +32,7 @@ export const deleteMedia = async (
     const { whatsappId } = req.params;
   
     try {
-      const whatsapp = await Whatsapp.findByPk(whatsappId);
+      const whatsapp = await Whatsapp.findByPk(Number(whatsappId));
       const filePath = path.resolve("public", whatsapp.greetingMediaAttachment);
       const fileExists = fs.existsSync(filePath);
       if (fileExists) {

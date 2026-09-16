@@ -111,7 +111,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
 
-  const plan = await ShowPlanService(id);
+  const plan = await ShowPlanService(Number(id));
 
   return res.status(200).json(plan);
 };
@@ -170,7 +170,7 @@ export const update = async (
   } = planData;
 
   const plan = await UpdatePlanService({
-    id,
+    id: Number(id),
     name,
     users,
     connections,
@@ -196,7 +196,7 @@ export const remove = async (
 ): Promise<Response> => {
   const { id } = req.params;
 
-  const plan = await DeletePlanService(id);
+  const plan = await DeletePlanService(String(id));
 
   return res.status(200).json(plan);
 };

@@ -86,7 +86,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
-  const { scheduleId } = req.params;
+  const scheduleId = String(req.params.scheduleId);
   const { companyId } = req.user;
 
   const schedule = await ShowService(scheduleId, companyId);
@@ -102,7 +102,7 @@ export const update = async (
     throw new AppError("ERR_NO_PERMISSION", 403);
   }
 
-  const { scheduleId } = req.params;
+  const scheduleId = String(req.params.scheduleId);
   const scheduleData = req.body;
   const { companyId } = req.user;
 
@@ -122,7 +122,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { scheduleId } = req.params;
+  const scheduleId = String(req.params.scheduleId);
   const { companyId } = req.user;
 
   await DeleteService(scheduleId, companyId);
@@ -141,7 +141,7 @@ export const mediaUpload = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { id } = req.params;
+  const id = String(req.params.id);
   const files = req.files as Express.Multer.File[];
   const file = head(files);
 
@@ -161,7 +161,7 @@ export const deleteMedia = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   try {
     const schedule = await Schedule.findByPk(id);

@@ -66,7 +66,7 @@ type MessageData = {
 };
 export const addReaction = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const {messageId} = req.params;
+    const messageId = String(req.params.messageId);
     const {type} = req.body; // O tipo de reação, por exemplo, 'like', 'heart', etc.
     const {companyId, id} = req.user;
 
@@ -114,7 +114,7 @@ export const addReaction = async (req: Request, res: Response): Promise<Response
   }
 };
 export const index = async (req: Request, res: Response): Promise<Response> => {
-  const { ticketId } = req.params;
+  const ticketId = String(req.params.ticketId);
   const { pageNumber, selectedQueues: queueIdsStringified } = req.query as IndexQuery;
   const { companyId, profile } = req.user;
   let queues: number[] = [];
@@ -159,7 +159,7 @@ function obterNomeEExtensaoDoArquivo(url) {
 }
 
 export const store = async (req: Request, res: Response): Promise<Response> => {
-  const { ticketId } = req.params;
+  const ticketId = String(req.params.ticketId);
 
   const { body, quotedMsg, vCard, isPrivate = "false" }: MessageData = req.body;
   const medias = req.files as Express.Multer.File[];
@@ -354,7 +354,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { messageId } = req.params;
+  const messageId = String(req.params.messageId);
   const { companyId } = req.user;
 
   const message = await DeleteWhatsAppMessage(messageId, companyId);
@@ -477,7 +477,7 @@ export const send = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const edit = async (req: Request, res: Response): Promise<Response> => {
-  const { messageId } = req.params;
+  const messageId = String(req.params.messageId);
   const { companyId } = req.user;
   const { body }: MessageData = req.body;
 

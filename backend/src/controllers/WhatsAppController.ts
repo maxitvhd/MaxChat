@@ -331,7 +331,7 @@ export const storeFacebook = async (
 };
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
-  const { whatsappId } = req.params;
+  const whatsappId = String(req.params.whatsappId);
   const { companyId } = req.user;
   const { session } = req.query;
 
@@ -346,7 +346,7 @@ export const update = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { whatsappId } = req.params;
+  const whatsappId = String(req.params.whatsappId);
   const whatsappData = req.body;
   const { companyId } = req.user;
 
@@ -388,7 +388,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { whatsappId } = req.params;
+  const whatsappId = String(req.params.whatsappId);
   const { companyId, profile } = req.user;
   const io = getIO();
 
@@ -470,7 +470,7 @@ export const updateAdmin = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { whatsappId } = req.params;
+  const whatsappId = String(req.params.whatsappId);
   const whatsappData = req.body;
   const { companyId } = req.user;
 
@@ -502,7 +502,7 @@ export const removeAdmin = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { whatsappId } = req.params;
+  const whatsappId = String(req.params.whatsappId);
   const { companyId } = req.user;
   const io = getIO();
   
@@ -553,7 +553,7 @@ export const removeAdmin = async (
 };
 
 export const showAdmin = async (req: Request, res: Response): Promise<Response> => {
-  const { whatsappId } = req.params;
+  const whatsappId = String(req.params.whatsappId);
   const { companyId } = req.user;
   // 
   const whatsapp = await ShowWhatsAppServiceAdmin(whatsappId);

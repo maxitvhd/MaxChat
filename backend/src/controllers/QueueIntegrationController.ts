@@ -60,7 +60,7 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
   const { integrationId } = req.params;
   const { companyId } = req.user;
 
-  const queueIntegration = await ShowQueueIntegrationService(integrationId, companyId);
+  const queueIntegration = await ShowQueueIntegrationService(Number(integrationId), companyId);
 
   return res.status(200).json(queueIntegration);
 };
@@ -73,7 +73,7 @@ export const update = async (
   const integrationData = req.body;
   const { companyId } = req.user;
 
-  const queueIntegration = await UpdateQueueIntegrationService({ integrationData, integrationId, companyId });
+  const queueIntegration = await UpdateQueueIntegrationService({ integrationData, integrationId: String(integrationId), companyId });
 
   const io = getIO();
   io.of(String(companyId))
@@ -92,7 +92,7 @@ export const remove = async (
   const { integrationId } = req.params;
   const { companyId } = req.user;
 
-  await DeleteQueueIntegrationService(integrationId);
+  await DeleteQueueIntegrationService(String(integrationId));
 
   const io = getIO();
   io.of(String(companyId))

@@ -99,7 +99,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const authHeader = req.headers.authorization;
   const [, token] = authHeader.split(" ");
@@ -162,7 +162,7 @@ export const update = async (
     throw new AppError(err.message);
   }
 
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const authHeader = req.headers.authorization;
   const [, token] = authHeader.split(" ");
@@ -187,7 +187,7 @@ export const updateSchedules = async (
   res: Response
 ): Promise<Response> => {
   const { schedules }: SchedulesData = req.body;
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const authHeader = req.headers.authorization;
   const [, token] = authHeader.split(" ");
@@ -211,7 +211,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { id } = req.params;
+  const id = String(req.params.id);
   const authHeader = req.headers.authorization;
   const [, token] = authHeader.split(" ");
   const decoded = verify(token, authConfig.secret);
@@ -228,7 +228,7 @@ export const remove = async (
 };
 
 export const listPlan = async (req: Request, res: Response): Promise<Response> => {
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const authHeader = req.headers.authorization;
   const [, token] = authHeader.split(" ");

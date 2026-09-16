@@ -65,7 +65,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
-  const { tagId } = req.params;
+  const tagId = String(req.params.tagId);
 
   const tag = await ShowService(tagId);
 
@@ -83,7 +83,7 @@ export const update = async (
     throw new AppError("ERR_NO_PERMISSION", 403);
   }
 
-  const { tagId } = req.params;
+  const tagId = String(req.params.tagId);
   const tagData = req.body;
   const { companyId } = req.user;
 
@@ -103,7 +103,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { tagId } = req.params;
+  const tagId = String(req.params.tagId);
   const { companyId } = req.user;
 
   await DeleteService(tagId);
@@ -151,7 +151,8 @@ export const removeContactTag = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { tagId, contactId } = req.params;
+  const tagId = String(req.params.tagId);
+  const { contactId } = req.params;
   const { companyId } = req.user;
 
   

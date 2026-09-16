@@ -55,7 +55,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
 
-  const invoice = await ShowInvoceService(id);
+  const invoice = await ShowInvoceService(Number(id));
 
   return res.status(200).json(invoice);
 };
@@ -115,7 +115,7 @@ export const remove = async (
 ): Promise<Response> => {
   const { id } = req.params;
 
-  const invoice = await DeleteInvoiceService(id);
+  const invoice = await DeleteInvoiceService(Number(id));
 
   return res.status(200).json(invoice);
 }; 

@@ -118,7 +118,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
 
-  const company = await ShowCompanyService(id);
+  const company = await ShowCompanyService(Number(id));
 
   return res.status(200).json(company);
 };
@@ -126,7 +126,7 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
 export const showEmail = async (req: Request, res: Response): Promise<Response> => {
   const { email } = req.params;
 
-  const company = await ShowEmailCompanyService(email);
+  const company = await ShowEmailCompanyService(String(email));
 
   return res.status(200).json(company);
 };
@@ -192,7 +192,7 @@ export const update = async (
     throw new AppError(err.message);
   }
 
-  const company = await UpdateCompanyService({ id, ...companyData });
+  const company = await UpdateCompanyService({ id: Number(id), ...companyData });
 
   return res.status(200).json(company);
 };
@@ -205,7 +205,7 @@ export const updateSchedules = async (
   const { id } = req.params;
 
   const company = await UpdateSchedulesService({
-    id,
+    id: Number(id),
     schedules
   });
 
@@ -218,7 +218,7 @@ export const remove = async (
 ): Promise<Response> => {
   const { id } = req.params;
 
-  const company = await DeleteCompanyService(id);
+  const company = await DeleteCompanyService(String(id));
 
   return res.status(200).json(company);
 };

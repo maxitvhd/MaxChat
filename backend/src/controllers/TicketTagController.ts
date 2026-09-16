@@ -16,7 +16,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
       tagId: Number(tagId)
     });
 
-    const ticket = await ShowTicketService(ticketId, companyId);
+    const ticket = await ShowTicketService(Number(ticketId), companyId);
 
     const io = getIO();
     io.of(String(companyId))
@@ -73,7 +73,7 @@ export const remove = async (req: Request, res: Response): Promise<Response> => 
       await TicketTag.destroy({ where: { ticketId, tagId: tagIdsWithKanbanOne } });
 
 
-    const ticket = await ShowTicketService(ticketId, companyId);
+    const ticket = await ShowTicketService(Number(ticketId), companyId);
 
     const io = getIO();
     io.of(String(companyId))

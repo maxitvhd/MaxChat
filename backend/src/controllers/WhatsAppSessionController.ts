@@ -12,7 +12,7 @@ const store = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
 
   // 
-  const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
+  const whatsapp = await ShowWhatsAppService(Number(whatsappId), companyId);
   await StartWhatsAppSession(whatsapp, companyId);
 
 
@@ -43,11 +43,11 @@ const remove = async (req: Request, res: Response): Promise<Response> => {
   const { whatsappId } = req.params;
   const { companyId } = req.user;
   
-  const whatsapp = await ShowWhatsAppService(whatsappId, companyId);
+  const whatsapp = await ShowWhatsAppService(Number(whatsappId), companyId);
 
 
   if (whatsapp.channel === "whatsapp") {
-    await DeleteBaileysService(whatsappId);
+    await DeleteBaileysService(Number(whatsappId));
 
     const wbot = getWbot(whatsapp.id);
 

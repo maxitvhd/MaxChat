@@ -62,7 +62,7 @@ export const flowCampaign = async (
   const { idFlow } = req.params;
   const { companyId } = req.user;
 
-  const id = parseInt(idFlow)
+  const id = parseInt(String(idFlow))
 
   const flow = await GetFlowsCampaignDataService({
     companyId,
@@ -90,7 +90,7 @@ export const deleteFlowCampaign = async (
 ): Promise<Response> => {
   const { idFlow } = req.params;
 
-  const flowIdInt = parseInt(idFlow);
+  const flowIdInt = parseInt(String(idFlow));
 
   const flow = await DeleteFlowCampaignService(flowIdInt);
 

@@ -60,7 +60,7 @@ export const deleteFlow = async (
 ): Promise<Response> => {
   const { idFlow } = req.params;
 
-  const flowIdInt = parseInt(idFlow);
+  const flowIdInt = parseInt(String(idFlow));
 
   const flow = await DeleteFlowBuilderService(flowIdInt);
 
@@ -88,7 +88,7 @@ export const flowOne = async (
 
   const { companyId } = req.user;
 
-  const idFlowInt = parseInt(idFlow);
+  const idFlowInt = parseInt(String(idFlow));
 
   const webhook = await GetFlowBuilderService({
     companyId,
@@ -128,7 +128,7 @@ export const FlowDataGetOne = async (
 
   const { companyId } = req.user;
 
-  const idFlowInt = parseInt(idFlow);
+  const idFlowInt = parseInt(String(idFlow));
 
   const webhook = await FlowsGetDataService({
     companyId,

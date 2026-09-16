@@ -287,7 +287,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
-  const { ticketId } = req.params;
+  const ticketId = String(req.params.ticketId);
   const { id: userId, companyId } = req.user;
 
   const contact = await ShowTicketService(ticketId, companyId);
@@ -302,7 +302,7 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const showLog = async (req: Request, res: Response): Promise<Response> => {
-  const { ticketId } = req.params;
+  const ticketId = String(req.params.ticketId);
   const { id: userId, companyId } = req.user;
 
   const log = await ShowLogTicketService({ ticketId, companyId });
@@ -314,7 +314,7 @@ export const showFromUUID = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { uuid } = req.params;
+  const uuid = String(req.params.uuid);
   const { id: userId, companyId } = req.user;
 
 
@@ -336,7 +336,7 @@ export const update = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { ticketId } = req.params;
+  const ticketId = String(req.params.ticketId);
   const ticketData: TicketData = req.body;
   const { companyId } = req.user;
 
@@ -357,7 +357,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { ticketId } = req.params;
+  const ticketId = String(req.params.ticketId);
   const { id: userId, companyId } = req.user;
 
   // await ShowTicketService(ticketId, companyId);

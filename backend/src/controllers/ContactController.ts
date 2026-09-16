@@ -228,7 +228,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
-  const { contactId } = req.params;
+  const contactId = String(req.params.contactId);
   const { companyId } = req.user;
 
   const contact = await ShowContactService(contactId, companyId);
@@ -242,7 +242,7 @@ export const update = async (
 ): Promise<Response> => {
   const contactData: ContactData = req.body;
   const { companyId } = req.user;
-  const { contactId } = req.params;
+  const contactId = String(req.params.contactId);
 
   const schema = Yup.object().shape({
     name: Yup.string(),
@@ -287,7 +287,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { contactId } = req.params;
+  const contactId = String(req.params.contactId);
   const { companyId } = req.user;
 
   await ShowContactService(contactId, companyId);
@@ -317,7 +317,7 @@ export const toggleAcceptAudio = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  var { contactId } = req.params;
+  var contactId = String(req.params.contactId);
   const { companyId } = req.user;
   const contact = await ToggleAcceptAudioContactService({ contactId });
 
@@ -335,7 +335,7 @@ export const blockUnblock = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  var { contactId } = req.params;
+  var contactId = String(req.params.contactId);
   const { companyId } = req.user;
   const { active } = req.body;
 
@@ -370,7 +370,7 @@ export const upload = async (req: Request, res: Response) => {
 };
 
 export const getContactProfileURL = async (req: Request, res: Response) => {
-  const { number } = req.params
+  const number = String(req.params.number);
   const { companyId } = req.user;
 
   
@@ -436,7 +436,7 @@ export const getContactProfileURL = async (req: Request, res: Response) => {
     req: Request,
     res: Response
   ): Promise<Response> => {
-    const { contactId } = req.params;
+    const contactId = String(req.params.contactId);
 
     const contactTags = await FindContactTags({ contactId });
 
@@ -451,7 +451,7 @@ export const getContactProfileURL = async (req: Request, res: Response) => {
   }
 
   export const toggleDisableBot = async (req: Request, res: Response): Promise<Response> => {
-    var { contactId } = req.params;
+    var contactId = String(req.params.contactId);
     const { companyId } = req.user;
     const contact = await ToggleDisableBotContactService({ contactId });
 
@@ -470,7 +470,7 @@ export const getContactProfileURL = async (req: Request, res: Response) => {
     res: Response
   ): Promise<Response> => {
     const { wallets } = req.body;
-    const { contactId } = req.params;
+    const contactId = String(req.params.contactId);
     const { companyId } = req.user;
 
     const contact = await UpdateContactWalletsService({

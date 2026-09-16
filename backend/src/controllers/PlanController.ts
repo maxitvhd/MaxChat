@@ -147,12 +147,12 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
   const PlanCompany = company.planId;
 
   if (requestUser.super === true) {
-    const plan = await ShowPlanService(id);
+    const plan = await ShowPlanService(Number(id));
     return res.status(200).json(plan);
   } else if (id !== PlanCompany.toString()) {
     return res.status(400).json({ error: "Você não possui permissão para acessar este recurso!" });
   } else if (id === PlanCompany.toString()) {
-    const plan = await ShowPlanService(id);
+    const plan = await ShowPlanService(Number(id));
     return res.status(200).json(plan);
   }
 
@@ -246,7 +246,7 @@ export const remove = async (
   const requestUser = await User.findByPk(requestUserId);
 
   if (requestUser.super === true) {
-    const plan = await DeletePlanService(id);
+    const plan = await DeletePlanService(String(id));
     return res.status(200).json(plan);
   } else if (companyId.toString() !== id) {
     return res.status(400).json({ error: "Você não possui permissão para acessar este recurso!" });

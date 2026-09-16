@@ -58,7 +58,7 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
   const { fileId } = req.params;
   const { companyId } = req.user;
 
-  const file = await ShowService(fileId, companyId);
+  const file = await ShowService(Number(fileId), companyId);
 
   return res.status(200).json(file);
 };
@@ -106,7 +106,7 @@ export const update = async (
   const fileData = req.body;
   const { companyId } = req.user;
 
-  const fileList = await UpdateService({ fileData, id: fileId, companyId });
+  const fileList = await UpdateService({ fileData, id: Number(fileId), companyId });
 
   const io = getIO();
   io.of(String(companyId))
@@ -126,7 +126,7 @@ export const remove = async (
   const { fileId } = req.params;
   const { companyId } = req.user;
 
-  await DeleteService(fileId, companyId);
+  await DeleteService(Number(fileId), companyId);
 
   const io = getIO();
   io.of(String(companyId))

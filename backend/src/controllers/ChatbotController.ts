@@ -30,7 +30,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { chatbotId } = req.params;
 
-  const queue = await ShowChatBotServices(chatbotId);
+  const queue = await ShowChatBotServices(Number(chatbotId));
   return res.status(200).json(queue);
 };
 
@@ -41,7 +41,7 @@ export const update = async (
   const { chatbotId } = req.params;
   const { companyId } = req.user;
 
-  const chatbot = await UpdateChatBotServices(chatbotId, req.body);
+  const chatbot = await UpdateChatBotServices(Number(chatbotId), req.body);
 
   const io = getIO();
   io.of(String(companyId))
@@ -60,7 +60,7 @@ export const remove = async (
   const { chatbotId } = req.params;
   const { companyId } = req.user;
 
-  await DeleteChatBotServices(chatbotId);
+  await DeleteChatBotServices(Number(chatbotId));
 
   const io = getIO();
   io.of(String(companyId))

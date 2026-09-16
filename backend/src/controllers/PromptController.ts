@@ -58,7 +58,7 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
   const [, token] = authHeader.split(" ");
   const decoded = verify(token, authConfig.secret);
   const { companyId } = decoded as TokenPayload;
-  const prompt = await ShowPromptService({ promptId, companyId });
+  const prompt = await ShowPromptService({ promptId: Number(promptId), companyId });
 
   return res.status(200).json(prompt);
 };
@@ -74,7 +74,7 @@ export const update = async (
   const decoded = verify(token, authConfig.secret);
   const { companyId } = decoded as TokenPayload;
 
-  const prompt = await UpdatePromptService({ promptData, promptId: promptId, companyId });
+  const prompt = await UpdatePromptService({ promptData, promptId: Number(promptId), companyId });
 
   const io = getIO();
   io.of(String(companyId))
@@ -100,7 +100,7 @@ export const remove = async (
 
     if (count > 0) return res.status(200).json({ message: "Não foi possível excluir! Verifique se este prompt está sendo usado nas conexões Whatsapp!" });
 
-    await DeletePromptService(promptId, companyId);
+    await DeletePromptService(Number(promptId), companyId);
 
     const io = getIO();
     io.of(String(companyId))

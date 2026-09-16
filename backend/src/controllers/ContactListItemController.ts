@@ -79,7 +79,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
 
-  const record = await ShowService(id);
+  const record = await ShowService(Number(id));
 
   return res.status(200).json(record);
 };
@@ -105,7 +105,7 @@ export const update = async (
 
   const record = await UpdateService({
     ...data,
-    id
+    id: Number(id)
   });
 
   const io = getIO();
@@ -125,7 +125,7 @@ export const remove = async (
   const { id } = req.params;
   const { companyId } = req.user;
 
-  await DeleteService(id);
+  await DeleteService(String(id));
 
   const io = getIO();
   io.of(String(companyId))

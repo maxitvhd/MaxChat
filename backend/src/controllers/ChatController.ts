@@ -97,7 +97,7 @@ export const update = async (
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
 
-  const record = await ShowFromUuidService(id);
+  const record = await ShowFromUuidService(String(id));
 
   return res.status(200).json(record);
 };
@@ -109,7 +109,7 @@ export const remove = async (
   const { id } = req.params;
   const { companyId } = req.user;
 
-  await DeleteService(id);
+  await DeleteService(String(id));
 
   const io = getIO();
   io.of(String(companyId))
@@ -173,7 +173,7 @@ export const checkAsRead = async (
   const chatUser = await ChatUser.findOne({ where: { chatId: id, userId } });
   await chatUser.update({ unreads: 0 });
 
-  const chat = await Chat.findByPk(id, {
+  const chat = await Chat.findByPk(Number(id), {
     include: [
       { model: User, as: "owner" },
       { model: ChatUser, as: "users" }
@@ -205,7 +205,7 @@ export const messages = async (
   const ownerId = +req.user.id;
 
   const { records, count, hasMore } = await FindMessages({
-    chatId,
+    chatId: String(chatId),
     ownerId,
     pageNumber
   });

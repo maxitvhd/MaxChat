@@ -37,12 +37,10 @@ import apiCompanyRoutes from "./api/apiCompanyRoutes";
 import apiContactRoutes from "./api/apiContactRoutes";
 import apiMessageRoutes from "./api/apiMessageRoutes";
 import companySettingsRoutes from "./companySettingsRoutes";
-
 import promptRoutes from "./promptRouter";
 import statisticsRoutes from "./statisticsRoutes";
 import scheduleMessageRoutes from "./ScheduledMessagesRoutes";
 import flowDefaultRoutes from "./flowDefaultRoutes";
-import webHook from "./webHookRoutes";
 import flowBuilder from "./flowBuilderRoutes";
 import flowCampaignRoutes from "./flowCampaignRoutes";
 
@@ -56,7 +54,6 @@ routes.use(settingRoutes);
 routes.use(contactRoutes);
 routes.use(ticketRoutes);
 routes.use(whatsappRoutes);
-routes.use(messageRoutes);
 routes.use(messageRoutes);
 routes.use(whatsappSessionRoutes);
 routes.use(queueRoutes);
@@ -88,7 +85,6 @@ routes.use("/api", apiContactRoutes);
 routes.use("/api", apiMessageRoutes);
 
 routes.use(flowDefaultRoutes);
-routes.use(webHook)
 routes.use(flowBuilder)
 routes.use(flowCampaignRoutes)
 

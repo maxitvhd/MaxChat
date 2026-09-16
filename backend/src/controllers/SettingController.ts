@@ -32,7 +32,7 @@ export const index = async (req: Request, res: Response): Promise<Response> => {
 
 export const showOne = async (req: Request, res: Response): Promise<Response> => {
   const { companyId } = req.user;
-  const { settingKey: key } = req.params;
+  const key = String(req.params.settingKey);
 
   
   
@@ -53,7 +53,7 @@ export const update = async (
     throw new AppError("ERR_NO_PERMISSION", 403);
   }
 
-  const { settingKey: key } = req.params;
+  const key = String(req.params.settingKey);
   const { value } = req.body;
   const { companyId } = req.user;
 
@@ -77,7 +77,7 @@ export const getSetting = async (
   req: Request,
   res: Response): Promise<Response> => {
 
-  const { settingKey: key } = req.params;
+  const key = String(req.params.settingKey);
 
   const setting = await GetSettingService({ key });
 
@@ -90,7 +90,7 @@ export const updateOne = async (
   res: Response
 ): Promise<Response> => {
 
-  const { settingKey: key } = req.params;
+  const key = String(req.params.settingKey);
   const { value } = req.body;
 
   const setting = await UpdateOneSettingService({
@@ -104,7 +104,7 @@ export const updateOne = async (
 export const publicShow = async (req: Request, res: Response): Promise<Response> => {
   
   
-  const { settingKey: key } = req.params;
+  const key = String(req.params.settingKey);
   
   const settingValue = await GetPublicSettingService({ key });
 

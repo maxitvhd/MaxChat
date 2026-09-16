@@ -72,7 +72,7 @@ export const show = async (req: Request, res: Response): Promise<Response> => {
   const { queueId } = req.params;
   const { companyId } = req.user;
 
-  const queue = await ShowQueueService(queueId, companyId);
+  const queue = await ShowQueueService(Number(queueId), companyId);
 
   return res.status(200).json(queue);
 };
@@ -99,7 +99,7 @@ export const update = async (
     closeTicket
   } = req.body;
 
-  const queue = await UpdateQueueService(queueId, 
+  const queue = await UpdateQueueService(Number(queueId), 
     {name,
     color,
     greetingMessage,
@@ -131,7 +131,7 @@ export const remove = async (
   const { queueId } = req.params;
   const { companyId } = req.user;
 
-  await DeleteQueueService(queueId, companyId);
+  await DeleteQueueService(Number(queueId), companyId);
 
   const io = getIO();
   io.of(String(companyId))

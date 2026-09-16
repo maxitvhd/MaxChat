@@ -79,7 +79,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 export const show = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
 
-  const ticketNote = await ShowTicketNoteService(id);
+  const ticketNote = await ShowTicketNoteService(Number(id));
 
   return res.status(200).json(ticketNote);
 };
@@ -115,7 +115,7 @@ export const remove = async (
     throw new AppError("ERR_NO_PERMISSION", 403);
   }
 
-  await DeleteTicketNoteService(id);
+  await DeleteTicketNoteService(String(id));
 
   return res.status(200).json({ message: "Observação removida" });
 };

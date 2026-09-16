@@ -158,7 +158,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 };
 
 export const show = async (req: Request, res: Response): Promise<Response> => {
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const record = await ShowService(id);
 
@@ -183,7 +183,7 @@ export const update = async (
     throw new AppError(err.message);
   }
 
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   const record = await UpdateService({
     ...data,
@@ -226,7 +226,7 @@ export const remove = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { id } = req.params;
+  const id = String(req.params.id);
   const { companyId } = req.user;
 
   await DeleteService(id);
@@ -255,7 +255,7 @@ export const mediaUpload = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { id } = req.params;
+  const id = String(req.params.id);
   const files = req.files as Express.Multer.File[];
   const file = head(files);
 
@@ -275,7 +275,7 @@ export const deleteMedia = async (
   res: Response
 ): Promise<Response> => {
   const { companyId } = req.user;
-  const { id } = req.params;
+  const id = String(req.params.id);
 
   try {
     const campaign = await Campaign.findByPk(id);
