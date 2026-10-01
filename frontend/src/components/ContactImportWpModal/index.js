@@ -6,7 +6,7 @@ import api from "../../services/api";
 import { Can } from "../Can";
 
 import { AuthContext } from "../../context/Auth/AuthContext";
-import * as XLSX from "xlsx";
+// dynamic import for xlsx handled separately
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 import toastError from '../../errors/toastError';
 const useStyles = makeStyles((theme) => ({
@@ -130,6 +130,7 @@ const ContactImportWpModal = ({ isOpen, handleClose, selectedTags, hideNum, user
       return { name: e.name, number: (hideNum && userProfile === "user" ? e.isGroup ? e.number : e.number.slice(0, -6) + "**-**" + e.number.slice(-2) : e.number), email: e.email, tags: e.tags };
     });
     //
+    const XLSX = await import('xlsx');
     let wb = XLSX.utils.book_new();
     let ws = XLSX.utils.json_to_sheet(exportData);
     XLSX.utils.book_append_sheet(wb, ws, "Contatos");
@@ -140,9 +141,10 @@ const ContactImportWpModal = ({ isOpen, handleClose, selectedTags, hideNum, user
     const [file] = e.target.files;
     const reader = new FileReader();
 
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const bstr = evt.target.result;
+        const XLSX = await import('xlsx');
         const wb = XLSX.read(bstr, { type: "binary" });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];

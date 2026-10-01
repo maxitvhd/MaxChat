@@ -6,7 +6,7 @@ import api from "../../services/api";
 import { Can } from "../Can";
 import AttachFileIcon from "@material-ui/icons/AttachFile";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import * as XLSX from "xlsx";
+// dynamic import for xlsx handled separately
 const useStyles = makeStyles((theme) => ({
   multFieldLine: {
     display: "flex",

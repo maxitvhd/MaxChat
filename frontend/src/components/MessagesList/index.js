@@ -1233,4 +1233,4 @@ return (
 );
 };
 
-export default MessagesList;
+export default React.memo(MessagesList);

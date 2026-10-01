@@ -42,7 +42,7 @@ import { Can } from "../../components/Can";
 import useContactLists from "../../hooks/useContactLists";
 import { Grid } from "@material-ui/core";
 
-import planilhaExemplo from "../../assets/planilha.xlsx";
+
 import ForbiddenPage from "../../components/ForbiddenPage";
 // import { SocketContext } from "../../context/Socket/SocketContext";
 
@@ -269,7 +269,16 @@ const ContactListItems = () => {
         ) : (
           <>
             {i18n.t("contactListItems.confirmationModal.importMessage")}
-            <a href={planilhaExemplo} download="planilha.xlsx">
+            <a 
+              onClick={() => import(/* webpackChunkName: "planilha" */ "../../assets/planilha.xlsx").then(module => module.default).then(file => {
+                const link = document.createElement('a');
+                link.href = file;
+                link.download = "planilha.xlsx";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }).catch(err => console.error('Erro ao carregar planilha:', err))}
+              download="planilha.xlsx">
               Clique aqui para baixar planilha exemplo.
             </a>
           </>

@@ -20,6 +20,7 @@ import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
 import PeopleIcon from "@material-ui/icons/People";
 import DownloadIcon from "@material-ui/icons/GetApp";
+import planilhaExemplo from "../../assets/planilha.xlsx";
 
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
@@ -33,7 +34,7 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
 import { Grid } from "@material-ui/core";
 
-import planilhaExemplo from "../../assets/planilha.xlsx";
+
 // import { SocketContext } from "../../context/Socket/SocketContext";
 import { AuthContext } from "../../context/Auth/AuthContext";
 

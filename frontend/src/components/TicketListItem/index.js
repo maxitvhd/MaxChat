@@ -636,4 +636,4 @@ const TicketListItem = ({ ticket }) => {
     );
 };
 
-export default TicketListItem;
+export default React.memo(TicketListItem);

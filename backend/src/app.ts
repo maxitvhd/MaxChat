@@ -34,7 +34,10 @@ export const isBullAuth = (req, res, next) => {
 dotenvConfig();
 
 // Inicializar Sentry
-Sentry.init({ dsn: process.env.SENTRY_DSN });
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [Sentry.expressIntegration()]
+});
 
 const app = express();
 
@@ -82,14 +85,13 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.json());
-app.use(Sentry.Handlers.requestHandler());
 app.use("/public", express.static(uploadConfig.directory));
 
 // Rotas
 app.use(routes);
 
 // Manipulador de erros do Sentry
-app.use(Sentry.Handlers.errorHandler());
+Sentry.setupExpressErrorHandler(app);
 
 // Middleware de tratamento de erros
 app.use(async (err: Error, req: Request, res: Response, _: NextFunction) => {

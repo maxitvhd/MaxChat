@@ -28,7 +28,7 @@ import {
   RecordVoiceOver as RecordVoiceOverIcon,
   GroupAdd as GroupAddIcon,
 } from "@mui/icons-material";
-import * as XLSX from 'xlsx';
+
 import { toast } from "react-toastify";
 import { isArray, isEmpty } from "lodash";
 import moment from "moment";
@@ -99,7 +99,8 @@ const Dashboard = () => {
     setLoading(false);
   }
 
-  const exportarGridParaExcel = () => {
+  const exportarGridParaExcel = async () => {
+    const XLSX = await import('xlsx');
     const ws = XLSX.utils.table_to_sheet(document.getElementById('grid-attendants'));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'RelatorioDeAtendentes');

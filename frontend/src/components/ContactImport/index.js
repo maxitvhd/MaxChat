@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import makeStyles from "@material-ui/core/styles/makeStyles";
-import { read, utils } from "xlsx";
+// dynamic import for xlsx handled separately
 import {
   Button,
   FormControlLabel,
@@ -23,7 +23,7 @@ import toastError from "../../errors/toastError";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { toast } from "react-toastify";
 
-function WorksheetToDatagrid(ws) {
+async function WorksheetToDatagrid(ws, utils) {
   /* create an array of arrays */
   const rows = utils.sheet_to_json(ws, { header: 1, defval: "" });
 
@@ -195,12 +195,15 @@ const ContactImport = () => {
     setUploading(false);
     const file = acceptedFiles[0];
     const reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = async function (e) {
       try {
         const data = e.target.result;
+        const XLSX = await import('xlsx');
+        const utils = XLSX.utils;
+        const read = XLSX.read;
         const wb = read(data);
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const { rows, columns } = WorksheetToDatagrid(ws);
+        const { rows, columns } = await WorksheetToDatagrid(ws, utils);
         setRows(rows);
         setColumns(columns);
         setOpeningFile(false);

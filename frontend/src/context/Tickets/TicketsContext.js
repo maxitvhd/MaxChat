@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from "react";
+import React, { useState, useEffect, useMemo, createContext } from "react";
 import { useHistory } from "react-router-dom";
 
 const TicketsContext = createContext();
@@ -8,16 +8,21 @@ const TicketsContextProvider = ({ children }) => {
 	const [tabOpen, setTabOpen] = useState("open");
 	const history = useHistory();
 
+	const value = useMemo(
+		() => ({ currentTicket, setCurrentTicket, tabOpen, setTabOpen }),
+		[currentTicket, tabOpen]
+	);
+
 	useEffect(() => {
 		if (currentTicket.id !== null) {
 			history.push(`/tickets/${currentTicket.uuid}`);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [currentTicket])
+	}, [currentTicket, history])
 
 	return (
 		<TicketsContext.Provider
-			value={{ currentTicket, setCurrentTicket, tabOpen, setTabOpen }}
+			value={value}
 		>
 			{children}
 		</TicketsContext.Provider>

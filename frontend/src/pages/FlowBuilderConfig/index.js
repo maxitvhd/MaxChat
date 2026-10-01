@@ -1170,3 +1170,5 @@ export const FlowBuilderConfig = () => {
     </Stack>
   );
 };
+
+export default FlowBuilderConfig;

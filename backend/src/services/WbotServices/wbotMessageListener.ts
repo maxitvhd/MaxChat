@@ -97,8 +97,6 @@ import { IOpenAi } from "../../@types/openai";
 
 const os = require("os");
 
-const request = require("request");
-
 let i = 0;
 
 setInterval(() => {
@@ -3836,20 +3834,10 @@ export const handleMessageIntegration = async (
 
   if (queueIntegration.type === "n8n" || queueIntegration.type === "webhook") {
     if (queueIntegration?.urlN8N) {
-      const options = {
-        method: "POST",
-        url: queueIntegration?.urlN8N,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        json: msg
-      };
       try {
-        request(options, function (error, response) {
-          if (error) {
-            throw new Error(error);
-          } else {
-            
+        await axios.post(queueIntegration.urlN8N, msg, {
+          headers: {
+            "Content-Type": "application/json"
           }
         });
       } catch (error) {

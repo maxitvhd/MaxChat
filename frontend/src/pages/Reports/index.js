@@ -12,7 +12,7 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import Pagination from "@material-ui/lab/Pagination";
-import * as XLSX from 'xlsx';
+
 
 import api from "../../services/api";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
@@ -194,11 +194,13 @@ const Reports = () => {
       });
 
       
-      const ws = XLSX.utils.json_to_sheet(ticketsData);
-      const wb = XLSX.utils.book_new();
 
-      XLSX.utils.book_append_sheet(wb, ws, 'RelatorioDeAtendimentos');
-      XLSX.writeFile(wb, 'relatorio-de-atendimentos.xlsx');
+      const XLSX = await import('xlsx');
+      const { utils, writeFile } = XLSX;
+      const ws = utils.json_to_sheet(ticketsData);
+      const wb = utils.book_new();
+      utils.book_append_sheet(wb, ws, 'RelatorioDeAtendimentos');
+      writeFile(wb, 'relatorio-de-atendimentos.xlsx');
 
 
       setPageNumber(pageNumber); // Atualiza o estado da página atual

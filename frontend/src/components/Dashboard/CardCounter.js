@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 	}
 }));
 
-export default function CardCounter(props) {
+export default React.memo(function CardCounter(props) {
     const { icon, title, value, loading } = props
 	const classes = useStyles();
     return ( !loading ? 
@@ -48,6 +48,5 @@ export default function CardCounter(props) {
             />
         </Card>
         : <Skeleton variant="rect" height={80} />
-    )
-    
-}
+    );
+});

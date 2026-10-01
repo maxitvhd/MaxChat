@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { Cancel, Search, Send, SkipNext, SkipPrevious } from '@material-ui/icons';
 import AudioModal from '../AudioModal';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page, pdfjs } from "react-pdf";
 import { makeStyles } from "@material-ui/core/styles";
 import { grey } from '@material-ui/core/colors';
 import { InputAdornment, InputBase } from '@material-ui/core';
