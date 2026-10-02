@@ -53,6 +53,8 @@ import { Op } from "sequelize";
 import { campaignQueue, parseToMilliseconds, randomValue } from "../../queues";
 import User from "../../models/User";
 import { sayChatbot } from "./ChatBotListener";
+import Prompt from "../../models/Prompt";
+import { processarMensagemComIa } from "../AiServices/MessageAiBridge";
 import MarkDeleteWhatsAppMessage from "./MarkDeleteWhatsAppMessage";
 import ListUserQueueServices from "../UserQueueServices/ListUserQueueServices";
 import cacheLayer from "../../libs/cache";
@@ -4889,6 +4891,50 @@ const handleMessage = async (
     } catch (e) {
       Sentry.captureException(e);
       
+    }
+
+    // Módulo de IA por empresa.
+    // Substitui apenas o passo do bot: se a IA responder, envia e não chama
+    // o sayChatbot legado. Qualquer falha da IA cai no fluxo normal abaixo.
+    if (!msg.key.fromMe && bodyMessage?.trim()) {
+      try {
+        const promptDaFila = whatsapp?.promptId
+          ? await Prompt.findByPk(whatsapp.promptId)
+          : null;
+
+        const resultadoIa = await processarMensagemComIa({
+          companyId,
+          mensagem: bodyMessage,
+          contatoId: contact?.id,
+          replyEngineDoPrompt: promptDaFila?.replyEngine ?? null
+        });
+
+        if (resultadoIa.respondeu && resultadoIa.reply) {
+          const debouncedIa = debounce(
+            async () => {
+              await wbot.sendMessage(
+                `${ticket.contact.number}@${
+                  ticket.isGroup ? "g.us" : "s.whatsapp.net"
+                }`,
+                { text: resultadoIa.reply }
+              );
+            },
+            1000,
+            ticket.id
+          );
+          debouncedIa();
+
+          await ticket.update({
+            sendInactiveMessage: false,
+            amountUsedBotQueues: ticket.amountUsedBotQueues + 1
+          });
+
+          await ticket.reload();
+          return;
+        }
+      } catch (e) {
+        logger.error(`[IA] falha inesperada no listener: ${e}`);
+      }
     }
 
     if (ticket.queue && ticket.queueId && !msg.key.fromMe) {

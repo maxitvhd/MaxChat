@@ -56,11 +56,20 @@ class Prompt extends Model<Prompt> {
 
   @AllowNull(true)
   @Column
-  voiceKey:string;
+  voiceKey: string;
 
   @AllowNull(true)
   @Column
-  voiceRegion:string;
+  voiceRegion: string;
+
+  /**
+   * Override do motor de resposta desta fila.
+   * Quando preenchido, sobrescreve o defaultReplyEngine da empresa.
+   * Valores: default | jev | laya | openai | gemini | anthropic | ollama
+   */
+  @AllowNull(true)
+  @Column
+  replyEngine: string;
 
   @AllowNull
   @ForeignKey(() => Queue)

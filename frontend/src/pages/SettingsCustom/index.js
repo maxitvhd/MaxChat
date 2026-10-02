@@ -12,6 +12,7 @@ import PlansManager from "../../components/PlansManager";
 import HelpsManager from "../../components/HelpsManager";
 import Options from "../../components/Settings/Options";
 import Whitelabel from "../../components/Settings/Whitelabel";
+import AiSettings from "../../components/Settings/AiSettings";
 
 import { i18n } from "../../translate/i18n.js";
 import { toast } from "react-toastify";
@@ -152,6 +153,7 @@ const SettingsCustom = () => {
               className={classes.tab}
             >
               <Tab label={i18n.t("settings.tabs.options")} value={"options"} />
+              <Tab label="Inteligência Artificial" value={"ai"} />
               {schedulesEnabled && <Tab label="Horários" value={"schedules"} />}
               {isSuper() ? <Tab label="Empresas" value={"companies"} /> : null}
               {isSuper() ? <Tab label={i18n.t("settings.tabs.plans")} value={"plans"} /> : null}
@@ -218,6 +220,9 @@ const SettingsCustom = () => {
                     setSchedulesEnabled(value === "company")
                   }
                 />
+              </TabPanel>
+              <TabPanel className={classes.container} value={tab} name={"ai"}>
+                <AiSettings />
               </TabPanel>
             </Paper>
           </Paper>
