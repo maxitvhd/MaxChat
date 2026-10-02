@@ -1,4 +1,4 @@
-import { createContext, useMemo, useCallback } from "react";
+import { createContext } from "react";
 import openSocket from "socket.io-client";
 // import config from "../../services/config";
 
@@ -33,8 +33,6 @@ const socketManager = {
 	},
 };
 
-const memoizedManager = useMemo(() => socketManager, []);
-
 const SocketContext = createContext()
 
-export { SocketContext, memoizedManager };
+export { SocketContext };
