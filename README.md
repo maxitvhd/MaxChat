@@ -85,7 +85,16 @@ O `frontend/build/` não é versionado: é gerado no servidor.
 
 ## Notas
 
+- **`legacy-peer-deps` é obrigatório no backend.** O `@whiskeysockets/baileys`
+  declara `jimp@^1.6.0` como `peerOptional`, mas o projeto fixa `jimp@^0.16.1`,
+  que é a versão efetivamente usada. Sem o `backend/.npmrc` com
+  `legacy-peer-deps=true`, o `npm install` falha com `ERESOLVE` em qualquer
+  máquina limpa. Não remova o arquivo.
+- Rode `npm ci` (não `npm install`) para instalar exatamente as versões do
+  `package-lock.json`.
 - O `.sequelizerc` aponta para `dist/`. Rodar `db:migrate` sem `npm run build`
   antes faz o CLI não encontrar as migrations.
 - `npm run lint` no backend reporta problemas preexistentes de formatação
   (2745 findings). Não afetam build nem runtime.
+- O banco precisa de encoding **UTF8**. Verifique com `\l <dbname>`: se aparecer
+  `SQL_ASCII`, acentos e emojis do WhatsApp serão corrompidos.
