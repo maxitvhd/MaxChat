@@ -240,6 +240,8 @@ export interface BuscarMemoriaParams extends QdrantContexto {
   vetor: number[];
   limite?: number;
   _scoreMinimo?: number;
+  /** Quando informado, restringe ao histórico daquele contato. */
+  contatoId?: string | number;
 }
 
 export const buscarMemorias = async ({
@@ -248,7 +250,8 @@ export const buscarMemorias = async ({
   slug,
   vetor,
   limite = 5,
-  _scoreMinimo = 0
+  _scoreMinimo = 0,
+  contatoId
 }: BuscarMemoriaParams): Promise<
   { id: string | number; score: number; payload: Record<string, unknown> }[]
 > => {
@@ -259,6 +262,16 @@ export const buscarMemorias = async ({
     settings.qdrantCollectionPrefix
   );
   validarNomeColecao(companyId, nome, settings.qdrantCollectionPrefix);
+
+  // companyId sempre; contatoId quando informado, para o histórico de um
+  // cliente nunca vazar para outro dentro da mesma empresa.
+  const must: Record<string, unknown>[] = [
+    { key: "companyId", match: { value: companyId } }
+  ];
+
+  if (contatoId !== undefined && contatoId !== null && contatoId !== "") {
+    must.push({ key: "contatoId", match: { value: String(contatoId) } });
+  }
 
   const bruto = await aiRequest<{
     result?: {
@@ -278,9 +291,7 @@ export const buscarMemorias = async ({
       limit: limite,
       with_payload: true,
       // Filtro por tenant: mesmo com nome correto, o payload precisa bater.
-      filter: {
-        must: [{ key: "companyId", match: { value: companyId } }]
-      }
+      filter: { must }
     }
   });
 

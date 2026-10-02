@@ -14,6 +14,7 @@
  *              { respondeu: false } para o chamador seguir o fluxo
  *              humano/chatbot legado sem quebrar o atendimento.
  */
+import { randomUUID } from "crypto";
 import logger from "../../utils/logger";
 import ShowAiProviderSettingsService from "../AiProviderSettingsServices/ShowAiProviderSettingsService";
 import { ReplyEngine, AiSettingsLike, LlmAnswer } from "./types";
@@ -55,9 +56,15 @@ export interface MensagemAiResultado {
   memorias?: number;
 }
 
-/** Monta o ponto de memória no formato que o Qdrant espera. */
-const pontoId = (contatoId: string | number): string =>
-  String(contatoId).replace(/[^a-zA-Z0-9_-]/g, "");
+/**
+ * Monta o ID do ponto no Qdrant.
+ *
+ * O Qdrant aceita apenas inteiro unsigned ou UUID: string livre é recusada
+ * com 400 ("value X is not a valid point ID"). Cada mensagem vira um ponto
+ * próprio (id único), senão a resposta do assistente sobrescreveria a
+ * pergunta do cliente no mesmo id.
+ */
+const pontoId = (): string => randomUUID();
 
 /**
  * Busca memórias relevantes e devolve um bloco de contexto para o prompt.
@@ -66,7 +73,8 @@ const pontoId = (contatoId: string | number): string =>
 const recuperarMemoria = async (
   settings: AiSettingsLike,
   companyId: number,
-  mensagem: string
+  mensagem: string,
+  contatoId?: string | number
 ): Promise<{ contexto: string; total: number }> => {
   const slug = settings.memoryCollection || "memoria";
 
@@ -77,7 +85,8 @@ const recuperarMemoria = async (
       companyId,
       slug,
       vetor,
-      limite: Number(settings.maxHistoryMessages ?? 5)
+      limite: Number(settings.maxHistoryMessages ?? 5),
+      contatoId
     });
 
     if (!achados.length) return { contexto: "", total: 0 };
@@ -125,9 +134,14 @@ const gravarMemoria = async (
       settings,
       companyId,
       slug,
-      pontoId: pontoId(contatoId),
+      pontoId: pontoId(),
       vetor,
-      payload: { role, texto: mensagem, em: new Date().toISOString() }
+      payload: {
+        role,
+        texto: mensagem,
+        contatoId: String(contatoId),
+        em: new Date().toISOString()
+      }
     });
   } catch (e) {
     logger.warn(`[IA] falha ao gravar memória: ${(e as Error).message}`);
@@ -141,7 +155,7 @@ const gravarMemoria = async (
 export const processarMensagemComIa = async (
   ctx: MensagemAiContexto
 ): Promise<MensagemAiResultado> => {
-  const { companyId, mensagem } = ctx;
+  const { companyId, mensagem, contatoId } = ctx;
 
   if (!mensagem || !mensagem.trim()) {
     return { respondeu: false, motivo: "mensagem vazia" };
@@ -180,7 +194,7 @@ export const processarMensagemComIa = async (
     Boolean(settings.embeddingModel || settings.ollamaUrl);
 
   if (querMemoria) {
-    const r = await recuperarMemoria(settings, companyId, mensagem);
+    const r = await recuperarMemoria(settings, companyId, mensagem, contatoId);
     contexto = r.contexto;
     memorias = r.total;
   }
