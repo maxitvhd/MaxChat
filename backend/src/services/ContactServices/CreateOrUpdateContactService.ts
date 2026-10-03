@@ -114,7 +114,11 @@ const CreateOrUpdateContactService = async ({
           const wbotContact = await wbot.getContactById(remoteJid);
           contactName = wbotContact?.name || wbotContact?.pushname;
         } catch (e) {
-          logger.error("Erro ao buscar nome via wbot:", e);
+          logger.error(
+            `Erro ao buscar nome via wbot (${remoteJid}): ${
+              (e as Error)?.message || JSON.stringify(e)
+            }`
+          );
         }
       }
       contactName = contactName || `${number}`;
