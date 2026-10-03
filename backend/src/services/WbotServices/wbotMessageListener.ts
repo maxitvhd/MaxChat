@@ -4944,15 +4944,20 @@ const handleMessage = async (
           historico
         });
 
-        if (resultadoIa.respondeu && resultadoIa.reply) {
+if (resultadoIa.respondeu && resultadoIa.reply?.trim()) {
           // Envia direto (sem debounce): o debounce agrupa por ticket.id e
-          // cancenvava o envio da IA quando o bot legado agendava no mesmo
+          // cancelava o envio da IA quando o bot legado agendava no mesmo
           // ticket. Além disso o debounce não aguarda a promise, então
           // qualquer erro de rede era engolido e a resposta nunca chegava
           // no WhatsApp.
-          const jid = `${ticket.contact.number}@${
-            ticket.isGroup ? "g.us" : "s.whatsapp.net"
-          }`;
+          //
+          // Usa o remoteJid da mensagem recebida: reconstruir o jid a partir
+          // do contato erra em conversas que chegam por @lid.
+          const jid =
+            msg.key.remoteJid ||
+            `${ticket.contact.number}@${
+              ticket.isGroup ? "g.us" : "s.whatsapp.net"
+            }`;
 
           let enviada = false;
 
@@ -4961,7 +4966,7 @@ const handleMessage = async (
               await wbot.sendMessage(jid, { text: resultadoIa.reply });
               enviada = true;
               logger.info(
-                `[IA] resposta enviada ao WhatsApp ticket=${ticket.id} engine=${resultadoIa.engine}`
+                `[IA] resposta enviada ao WhatsApp ticket=${ticket.id} jid=${jid} engine=${resultadoIa.engine}`
               );
             } catch (e) {
               logger.error(
@@ -4974,23 +4979,9 @@ const handleMessage = async (
           }
 
           if (enviada) {
-            // Persiste para a resposta aparecer também no chat da plataforma.
-            await CreateMessageService({
-              messageData: {
-                body: resultadoIa.reply,
-                fromMe: true,
-                mediaType: "text",
-                read: true,
-                ack: 2,
-                wid: `IA_${Date.now()}_${ticket.id}`,
-                ticketId: ticket.id,
-                ticketTrakingId: ticketTraking?.id,
-              },
-              companyId
-            }).catch((e) =>
-              logger.error(`[IA] falha ao salvar resposta no ticket: ${e}`)
-            );
-
+            // NÃO persistimos aqui: o Baileys devolve a própria mensagem
+            // enviada em `messages.upsert` e o listener a grava com o wid
+            // real. Salvar também aqui duplicava a mensagem no chat.
             await ticket.update({
               lastMessage: resultadoIa.reply,
               sendInactiveMessage: false,
