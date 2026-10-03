@@ -58,6 +58,12 @@ Precisa de confirmação do que a fila Maximo.TEC atende.
 
 ## Observacoes que afetam o menu
 
+0. **A fila Triagem roteia por marcador, nao por FlowBuilder.** O JEV NAFO move o ticket: ele
+   classifica intencao. O prompt da Triagem pergunta o departamento e a empresa e devolve a
+   escolha em `[[ROTA:Nome da fila]]`; o backend consome o marcador em
+   `backend/src/services/AiServices/rotaTriagem.ts`, tira a marcacao do texto e so troca a fila
+   se o nome existir na mesma empresa. Por isso os `FlowBuilders` ficaram vazios: com a IA ativa
+   o fluxo do WhatsApp nao chega a rodar, o modulo de IA responde antes.
 1. **DFast nao e produto separado.** E modulo de delivery dentro do MaxOS. Se o menu
   offer DFast como empresa, mantenha a resposta apontando para o mesmo time do MaxOS.
 2. **ZapSaudades e Missao Resgatar compartilham a mesma base de portal.** Confirmar se

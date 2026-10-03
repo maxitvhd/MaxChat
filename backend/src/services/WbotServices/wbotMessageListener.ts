@@ -90,6 +90,7 @@ import { FlowBuilderModel } from "../../models/FlowBuilder";
 import { IConnections, INodes } from "../WebhookService/DispatchWebHookService";
 import { FlowDefaultModel } from "../../models/FlowDefault";
 import { ActionsWebhookService } from "../WebhookService/ActionsWebhookService";
+import { extrairRota, aplicarRota } from "../AiServices/rotaTriagem";
 import { WebhookModel } from "../../models/Webhook";
 import { add, differenceInMilliseconds } from "date-fns";
 import { FlowCampaignModel } from "../../models/FlowCampaign";
@@ -4945,6 +4946,11 @@ const handleMessage = async (
         });
 
 if (resultadoIa.respondeu && resultadoIa.reply?.trim()) {
+          // A IA pode pedir a troca de fila no fim da resposta (ver prompt da
+          // fila Triagem). O marcador é removido antes do envio: o cliente
+          // nunca vê a marcação, e a fila só muda se o nome existir.
+          const rota = await extrairRota(resultadoIa.reply, companyId);
+
           // Envia direto (sem debounce): o debounce agrupa por ticket.id e
           // cancelava o envio da IA quando o bot legado agendava no mesmo
           // ticket. Além disso o debounce não aguarda a promise, então
@@ -4963,7 +4969,7 @@ if (resultadoIa.respondeu && resultadoIa.reply?.trim()) {
 
           for (let tentativa = 1; tentativa <= 2 && !enviada; tentativa++) {
             try {
-              await wbot.sendMessage(jid, { text: resultadoIa.reply });
+              await wbot.sendMessage(jid, { text: rota.texto });
               enviada = true;
               logger.info(
                 `[IA] resposta enviada ao WhatsApp ticket=${ticket.id} jid=${jid} engine=${resultadoIa.engine}`
@@ -4979,11 +4985,16 @@ if (resultadoIa.respondeu && resultadoIa.reply?.trim()) {
           }
 
           if (enviada) {
+            // Aplica a troca de fila depois do envio: se o envio falhar, o
+            // ticket continua na Triagem em vez de sumir para outra fila
+            // sem o cliente ter recebido nada.
+            await aplicarRota(ticket, companyId, rota.fila);
+
             // NÃO persistimos aqui: o Baileys devolve a própria mensagem
             // enviada em `messages.upsert` e o listener a grava com o wid
             // real. Salvar também aqui duplicava a mensagem no chat.
             await ticket.update({
-              lastMessage: resultadoIa.reply,
+              lastMessage: rota.texto,
               sendInactiveMessage: false,
               amountUsedBotQueues: ticket.amountUsedBotQueues + 1
             });
