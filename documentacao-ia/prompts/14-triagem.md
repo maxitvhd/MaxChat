@@ -130,6 +130,11 @@ Conclusoes que viraram decisao de implementacao:
 > - Só emita marcador quando você tiver ouvido a empresa: porque o cliente escolheu um número
 >   do menu de empresas, ou porque escreveu o nome.
 > - Na dúvida se sabe a empresa: **não emita**. Perguntar é sempre melhor que errar a fila.
+>
+> **Nome de departamento não é nome de fila.** Suporte, Financeiro, Vendas, Cancelamento e
+> Reclamação são departimentos da seção 4, não existem como filas. Nunca escreva esses
+> nomes dentro do marcador. Se o cliente escolheu um departamento e você não sabe a empresa,
+> envie o menu de empresas e **não diga que o encaminhou** — ele ainda está na Triagem.
 ## 9. Formato da resposta ao encerrar (obrigatório)
 > Uma frase curta de confirmação e, DEPOIS, o marcador no final da mensagem.
 > Exemplo literal:
