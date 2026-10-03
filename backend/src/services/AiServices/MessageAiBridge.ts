@@ -40,6 +40,12 @@ export interface MensagemAiContexto {
   systemPrompt?: string;
   /** override por prompt (Prompts.replyEngine) */
   replyEngineDoPrompt?: string | null;
+  /** modelo específico definido no prompt da fila (sobrescreve o do provedor) */
+  modeloDoPrompt?: string | null;
+  /** temperatura definida no prompt da fila */
+  temperatura?: number | null;
+  /** teto de tokens definido no prompt da fila */
+  maxTokens?: number | null;
   /** identificador estável do contato, para isolar a memória */
   contatoId?: string | number;
 }
@@ -156,6 +162,42 @@ const gravarMemoria = async (
 };
 
 /**
+ * Piso de instrução: garante português e resposta útil mesmo quando a fila
+ * ainda não tem prompt cadastrado.
+ */
+const PROMPT_PADRAO = [
+  "Você é um assistente de atendimento de uma empresa brasileira.",
+  "Responda SEMPRE em português do Brasil.",
+  "Seja educado, direto e objetivo, usando no máximo 3 frases.",
+  "Se não souber a resposta, diga que vai encaminhar para um atendente humano.",
+  "Nunca responda em inglês e nunca invente informações."
+].join(" ");
+
+/**
+ * Nome do campo de modelo em AiProviderSettings para o motor informado.
+ * Permite que o prompt da fila escolha um modelo específico sem mexer na
+ * configuração global da empresa.
+ */
+const modeloDoEngine = (engine: string): string => {
+  switch (engine) {
+    case ReplyEngine.OLLAMA:
+      return "ollamaModel";
+    case ReplyEngine.OPENAI:
+      return "openaiModel";
+    case ReplyEngine.GEMINI:
+      return "geminiModel";
+    case ReplyEngine.ANTHROPIC:
+      return "anthropicModel";
+    case ReplyEngine.JEV:
+      return "jevModel";
+    case ReplyEngine.LAYA:
+      return "layaModel";
+    default:
+      return "ollamaModel";
+  }
+};
+
+/**
  * Decide e produz a resposta de IA.
  * Retorna sempre um objeto; nunca lança.
  */
@@ -208,6 +250,11 @@ export const processarMensagemComIa = async (
 
   // ---- 2) system prompt ------------------------------------------------
   const blocos: string[] = [];
+
+  // Sem prompt configurado o modelo_small responde em inglês e inventa
+  // ("I'm not sure what you mean by..."). Este piso garante português.
+  blocos.push(PROMPT_PADRAO);
+
   if (ctx.systemPrompt?.trim()) blocos.push(ctx.systemPrompt.trim());
   if (contexto) {
     blocos.push(
@@ -255,14 +302,24 @@ export const processarMensagemComIa = async (
   }
 
   // ---- 4) motor de texto ----------------------------------------------
+  // Modelo/temperatura/tokens do prompt da fila sobrepõem os do provedor.
+  const settingsMotor: AiSettingsLike = {
+    ...settings,
+    ...(ctx.modeloDoPrompt?.trim()
+      ? { [modeloDoEngine(engine)]: ctx.modeloDoPrompt.trim() }
+      : {}),
+    ...(ctx.temperatura != null ? { temperature: ctx.temperatura } : {})
+  };
+
   let resposta: LlmAnswer;
   try {
     resposta = await executarResposta({
-      settings,
+      settings: settingsMotor,
       message: mensagem,
       engine,
       systemPrompt,
-      historico: ctx.historico ?? []
+      historico: ctx.historico ?? [],
+      ...(ctx.maxTokens ? { maxTokens: ctx.maxTokens } : {})
     });
   } catch (e) {
     logger.error(`[IA] motor ${engine} falhou: ${(e as Error).message}`);

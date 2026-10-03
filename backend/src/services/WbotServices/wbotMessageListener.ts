@@ -4899,15 +4899,49 @@ const handleMessage = async (
     // o sayChatbot legado. Qualquer falha da IA cai no fluxo normal abaixo.
     if (!msg.key.fromMe && bodyMessage?.trim()) {
       try {
-        const promptDaFila = whatsapp?.promptId
+        // Prompt da fila tem prioridade sobre o prompt da conexão: é ele que
+        // define a persona/instruções daquele atendimento.
+        let promptDaFila: any = whatsapp?.promptId
           ? await Prompt.findByPk(whatsapp.promptId)
           : null;
+
+        if (ticket.queueId) {
+          const promptDaFilaId = await Prompt.findOne({
+            where: { queueId: ticket.queueId, companyId }
+          });
+
+          if (promptDaFilaId) promptDaFila = promptDaFilaId;
+        }
+
+        const maxMensagens = Number(promptDaFila?.maxMessages ?? 10);
+
+        // Histórico recente (do mais antigo ao mais recente) para dar contexto.
+        const mensagensRecentes = await Message.findAll({
+          where: { ticketId: ticket.id },
+          order: [["id", "DESC"]],
+          limit: maxMensagens * 2
+        });
+
+        const historico = mensagensRecentes
+          .slice()
+          .reverse()
+          .filter((m) => !!m.body?.trim())
+          .slice(-maxMensagens)
+          .map((m) => ({
+            role: (m.fromMe ? "assistant" : "user") as "user" | "assistant",
+            content: m.body
+          }));
 
         const resultadoIa = await processarMensagemComIa({
           companyId,
           mensagem: bodyMessage,
           contatoId: contact?.id,
-          replyEngineDoPrompt: promptDaFila?.replyEngine ?? null
+          systemPrompt: promptDaFila?.prompt,
+          replyEngineDoPrompt: promptDaFila?.replyEngine ?? null,
+          modeloDoPrompt: promptDaFila?.model ?? null,
+          temperatura: promptDaFila?.temperature,
+          maxTokens: promptDaFila?.maxTokens,
+          historico
         });
 
         if (resultadoIa.respondeu && resultadoIa.reply) {
