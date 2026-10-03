@@ -1,8 +1,8 @@
 import { Server as SocketIO } from "socket.io";
 import { Server } from "http";
+import { instrument } from "@socket.io/admin-ui";
 import AppError from "../errors/AppError";
 import logger from "../utils/logger";
-import { instrument } from "@socket.io/admin-ui";
 import User from "../models/User";
 
 let io: SocketIO;
@@ -10,32 +10,32 @@ let io: SocketIO;
 export const initIO = (httpServer: Server): SocketIO => {
   io = new SocketIO(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL
+      origin: (process.env.FRONTEND_URL || "")
+        .split(",")
+        .map(o => o.trim())
+        .filter(Boolean),
+      credentials: true
     }
   });
 
   if (process.env.SOCKET_ADMIN && JSON.parse(process.env.SOCKET_ADMIN)) {
-    User.findByPk(1).then(
-      (adminUser) => {
-        instrument(io, {
-          auth: {
-            type: "basic",
-            username: adminUser.email,
-            password: adminUser.passwordHash
-          },
-          mode: "development",
-        });
-      }
-    ); 
-  }  
-  
+    User.findByPk(1).then(adminUser => {
+      instrument(io, {
+        auth: {
+          type: "basic",
+          username: adminUser.email,
+          password: adminUser.passwordHash
+        },
+        mode: "development"
+      });
+    });
+  }
+
   const workspaces = io.of(/^\/\w+$/);
   workspaces.on("connection", socket => {
-
     const { userId } = socket.handshake.query;
     // logger.info(`Client connected namespace ${socket.nsp.name}`);
-    // 
-
+    //
 
     socket.on("joinChatBox", (ticketId: string) => {
       // logger.info(`A client joined a ticket channel namespace ${socket.nsp.name}`);
@@ -65,7 +65,6 @@ export const initIO = (httpServer: Server): SocketIO => {
     socket.on("disconnect", () => {
       // logger.info(`Client disconnected namespace ${socket.nsp.name}`);
     });
-
   });
   return io;
 };
