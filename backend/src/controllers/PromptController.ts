@@ -39,8 +39,8 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
   const [, token] = authHeader.split(" ");
   const decoded = verify(token, authConfig.secret);
   const { companyId } = decoded as TokenPayload;
-  const { name, apiKey, prompt, maxTokens, temperature, promptTokens, completionTokens, totalTokens, queueId, maxMessages,voice,voiceKey,voiceRegion } = req.body;
-  const promptTable = await CreatePromptService({ name, apiKey, prompt, maxTokens, temperature, promptTokens, completionTokens, totalTokens, queueId, maxMessages, companyId,voice,voiceKey,voiceRegion });
+  const data = req.body;
+  const promptTable = await CreatePromptService({ ...data, companyId });
 
   const io = getIO();
   io.of(String(companyId))
@@ -114,4 +114,3 @@ export const remove = async (
     return res.status(500).json({ message: "Não foi possível excluir! Verifique se este prompt está sendo usado!" });
   }
 };
-

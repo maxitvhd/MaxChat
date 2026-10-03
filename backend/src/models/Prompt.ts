@@ -28,7 +28,7 @@ class Prompt extends Model<Prompt> {
   @Column
   prompt: string;
 
-  @AllowNull(false)
+  @AllowNull(true)
   @Column
   apiKey: string;
 
@@ -50,7 +50,10 @@ class Prompt extends Model<Prompt> {
   @Column({ defaultValue: 0 })
   totalTokens: number;
 
-  @AllowNull(false)
+  @Column({ defaultValue: 0 })
+  max_completion_tokens: number;
+
+  @AllowNull(true)
   @Column
   voice: string;
 
@@ -61,6 +64,10 @@ class Prompt extends Model<Prompt> {
   @AllowNull(true)
   @Column
   voiceRegion: string;
+
+  @AllowNull(true)
+  @Column
+  model: string;
 
   /**
    * Override do motor de resposta desta fila.

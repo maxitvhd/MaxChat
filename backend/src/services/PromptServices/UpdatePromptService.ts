@@ -6,19 +6,22 @@ import ShowPromptService from "./ShowPromptService";
 interface PromptData {
     id?: number;
     name: string;
-    apiKey: string;
+    apiKey?: string;
     prompt: string;
     maxTokens?: number;
     temperature?: number;
     promptTokens?: number;
     completionTokens?: number;
     totalTokens?: number;
+    max_completion_tokens?: number;
     queueId?: number;
     maxMessages?: number;
     companyId: string | number;
     voice?: string;
     voiceKey?: string;
     voiceRegion?: string;
+    model?: string;
+    replyEngine?: string;
 }
 
 interface Request {
@@ -37,20 +40,19 @@ const UpdatePromptService = async ({
     const promptSchema = Yup.object().shape({
         name: Yup.string().required("ERR_PROMPT_NAME_INVALID"),
         prompt: Yup.string().required("ERR_PROMPT_PROMPT_INVALID"),
-        apiKey: Yup.string().required("ERR_PROMPT_APIKEY_INVALID"),
         queueId: Yup.number().required("ERR_PROMPT_QUEUEID_INVALID"),
         maxMessages: Yup.number().required("ERR_PROMPT_MAX_MESSAGES_INVALID")
     });
 
-    const { name, apiKey, prompt, maxTokens, temperature, promptTokens, completionTokens, totalTokens, queueId, maxMessages, voice, voiceKey, voiceRegion } = promptData;
+    const { name, apiKey, prompt, maxTokens, temperature, promptTokens, completionTokens, totalTokens, max_completion_tokens, queueId, maxMessages, voice, voiceKey, voiceRegion, model, replyEngine } = promptData;
 
     try {
-        await promptSchema.validate({ name, apiKey, prompt, maxTokens, temperature, promptTokens, completionTokens, totalTokens, queueId, maxMessages });
+        await promptSchema.validate({ name, prompt, queueId, maxMessages });
     } catch (err) {
         throw new AppError(`${JSON.stringify(err, undefined, 2)}`);
     }
 
-    await promptTable.update({ name, apiKey, prompt, maxTokens, temperature, promptTokens, completionTokens, totalTokens, queueId, maxMessages, voice, voiceKey, voiceRegion });
+    await promptTable.update({ name, apiKey: apiKey || "", prompt, maxTokens, temperature, promptTokens, completionTokens, totalTokens, max_completion_tokens: max_completion_tokens || 0, queueId, maxMessages, voice, voiceKey, voiceRegion, model, replyEngine });
     await promptTable.reload();
     return promptTable;
 };
