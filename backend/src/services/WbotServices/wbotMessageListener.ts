@@ -4922,11 +4922,18 @@ const handleMessage = async (
           bodyMessage = stt.texto;
 
           // Guarda a transcrição no histórico: sem isso as próximas mensagens
-          // da IA recebem "[Áudio transcrito]" em vez da fala do cliente.
-          await Message.update(
-            { body: stt.texto },
-            { where: { ticketId: ticket.id, fromMe: false, body: "Áudio" } }
-          );
+          // da IA recebem "Áudio" em vez da fala do cliente.
+          // Só a mensagem que acabou de chegar. Um update por "body = Áudio"
+          // reescreveria todos os áudios antigos do ticket e apagaria o
+          // histórico do cliente.
+          const ultimaMensagem = await Message.findOne({
+            where: { ticketId: ticket.id },
+            order: [["id", "DESC"]]
+          });
+
+          if (ultimaMensagem && !ultimaMensagem.fromMe) {
+            await ultimaMensagem.update({ body: stt.texto });
+          }
         } else {
           logger.warn(
             `[STT] ticket=${ticket.id} sem transcrição (${stt.erro}); pedindo para o cliente escrever`

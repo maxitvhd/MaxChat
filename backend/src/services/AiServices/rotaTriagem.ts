@@ -32,6 +32,59 @@ export const normalizarNome = (valor: string): string =>
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 
+/**
+ * Distância de edição (Levenshtein) entre duas strings.
+ * Precisa ser barata: roda uma vez por fila da empresa a cada audio ou
+ * mensagem com marcador, no máximo umas 15 vezes.
+ */
+const distanciaEdicao = (a: string, b: string): number => {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+
+  let anterior = Array.from({ length: b.length + 1 }, (_, i) => i);
+
+  for (let i = 1; i <= a.length; i++) {
+    const atual = [i];
+
+    for (let j = 1; j <= b.length; j++) {
+      const custo = a[i - 1] === b[j - 1] ? 0 : 1;
+      atual[j] = Math.min(
+        atual[j - 1] + 1,
+        anterior[j] + 1,
+        anterior[j - 1] + custo
+      );
+    }
+
+    anterior = atual;
+  }
+
+  return anterior[b.length];
+};
+
+/**
+ * Tolera o erro de transcricao do Whisper.
+ * O modelo escreve "MaxiCote" para MaxCheckout e "MaxGass" para MaxGas, e
+ * o `includes` antigo nao pegava nome comprimido. Aqui a tolerancia cresce
+ * com o tamanho da fila, mas nunca chega a aceitar outro nome: exige que as
+ * duas strings sejam parecidas e que o pedido tenha o mesmo comprimento
+ * aproximado da fila.
+ */
+const pareceNomeDeFila = (pedido: string, fila: string): boolean => {
+  if (!pedido || !fila) return false;
+  if (fila.includes(pedido)) return true;
+
+  const limite = Math.max(
+    2,
+    Math.floor(fila.length * 0.34) // "maxicote" x "maxcheckout" = 3 erros em 11
+  );
+
+  if (pedido.length < limite) return false;
+  if (Math.abs(fila.length - pedido.length) > limite + 1) return false;
+
+  return distanciaEdicao(pedido, fila) <= limite;
+};
+
 export interface ResultadoRota {
   /** texto que vai realmente para o WhatsApp, sem o marcador */
   texto: string;
@@ -117,16 +170,27 @@ export const extrairRota = async (
     .map((fila) => fila.toJSON() as Queue)
     .filter((fila) => normalizarNome(fila.name) !== "triagem");
 
-  // Nome exato primeiro. O "includes" é só tolerância a erro de digitação
-  // ("Max Gas", "maximo.tec") e exige alvo mínimo, senão "gas" puxaria a
-  // fila errada.
-  const podeSerAproximado = alvo.length >= 4;
+  // Nome exato primeiro, depois o mais parecido. A similaridade cobre o que
+  // a transcricao do Whisper estraga ("MaxiCote", "MaxGass"), que o
+  // includes sozinho nao resolvia.
+  const nomes = lista.map((fila) => ({ fila, nome: normalizarNome(fila.name) }));
+
+  const exata = nomes.find((n) => n.nome === alvo);
+
   const encontrada =
-    lista.find((fila) => normalizarNome(fila.name) === alvo) ||
-    (podeSerAproximado
-      ? lista.find((fila) => normalizarNome(fila.name).includes(alvo))
-      : null) ||
+    exata?.fila ||
+    nomes
+      .filter((n) => pareceNomeDeFila(alvo, n.nome))
+      // A mais parecida vence, para o nome ficar unico mesmo com dois candidatos.
+      .sort((a, b) => distanciaEdicao(alvo, a.nome) - distanciaEdicao(alvo, b.nome))[0]
+      ?.fila ||
     null;
+
+  if (!exata && encontrada) {
+    logger.info(
+      `[ROTA] "${nomeSolicitado}" foi entendido como "${encontrada.name}"`
+    );
+  }
 
   if (!encontrada) {
     logger.warn(
