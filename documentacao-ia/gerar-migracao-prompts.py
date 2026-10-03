@@ -81,11 +81,19 @@ def extrair_prompt(path):
     if ini is None:
         raise SystemExit("sem secao '## Prompt' em " + path)
 
+    # O prompt vai ate o proximo cabecalho NAO numerado (Base de conhecimento,
+    # Pontos sem confirmacao, Duvidas). Cabecalhos numerados como "## 8." sao
+    # parte do prompt e nao podem interromper a leitura.
     fim = len(linhas)
     for j in range(ini + 1, len(linhas)):
-        if linhas[j].startswith("## "):
-            fim = j
-            break
+        linha = linhas[j]
+        if not linha.startswith("## "):
+            continue
+        titulo = linha[3:].strip()
+        if titulo and titulo[0].isdigit():
+            continue
+        fim = j
+        break
 
     bloco = []
     for l in linhas[ini + 1:fim]:
