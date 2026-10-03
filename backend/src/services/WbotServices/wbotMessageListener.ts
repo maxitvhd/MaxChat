@@ -96,6 +96,7 @@ import { FlowCampaignModel } from "../../models/FlowCampaign";
 import ShowTicketService from "../TicketServices/ShowTicketService";
 import { handleOpenAi } from "../IntegrationsServices/OpenAiService";
 import { IOpenAi } from "../../@types/openai";
+import getFrontendUrl from "../../helpers/FrontendUrl";
 
 const os = require("os");
 
@@ -796,7 +797,7 @@ const verifyContact = async (
   //   profilePicUrl = await wbot.profilePictureUrl(msgContact.id, "image");
   // } catch (e) {
   //   Sentry.captureException(e);
-  //   profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
+  //   profilePicUrl = `${getFrontendUrl()}/nopicture.png`;
   // }
 
   const contactData = {
@@ -4910,24 +4911,62 @@ const handleMessage = async (
         });
 
         if (resultadoIa.respondeu && resultadoIa.reply) {
-          const debouncedIa = debounce(
-            async () => {
-              await wbot.sendMessage(
-                `${ticket.contact.number}@${
-                  ticket.isGroup ? "g.us" : "s.whatsapp.net"
-                }`,
-                { text: resultadoIa.reply }
-              );
-            },
-            1000,
-            ticket.id
-          );
-          debouncedIa();
+          // Envia direto (sem debounce): o debounce agrupa por ticket.id e
+          // cancenvava o envio da IA quando o bot legado agendava no mesmo
+          // ticket. Além disso o debounce não aguarda a promise, então
+          // qualquer erro de rede era engolido e a resposta nunca chegava
+          // no WhatsApp.
+          const jid = `${ticket.contact.number}@${
+            ticket.isGroup ? "g.us" : "s.whatsapp.net"
+          }`;
 
-          await ticket.update({
-            sendInactiveMessage: false,
-            amountUsedBotQueues: ticket.amountUsedBotQueues + 1
-          });
+          let enviada = false;
+
+          for (let tentativa = 1; tentativa <= 2 && !enviada; tentativa++) {
+            try {
+              await wbot.sendMessage(jid, { text: resultadoIa.reply });
+              enviada = true;
+              logger.info(
+                `[IA] resposta enviada ao WhatsApp ticket=${ticket.id} engine=${resultadoIa.engine}`
+              );
+            } catch (e) {
+              logger.error(
+                `[IA] falha ao enviar resposta no WhatsApp (tentativa ${tentativa}/2) ticket=${ticket.id}: ${
+                  (e as Error).message
+                }`
+              );
+              await new Promise((r) => setTimeout(r, 2000));
+            }
+          }
+
+          if (enviada) {
+            // Persiste para a resposta aparecer também no chat da plataforma.
+            await CreateMessageService({
+              messageData: {
+                body: resultadoIa.reply,
+                fromMe: true,
+                mediaType: "text",
+                read: true,
+                ack: 2,
+                wid: `IA_${Date.now()}_${ticket.id}`,
+                ticketId: ticket.id,
+                ticketTrakingId: ticketTraking?.id,
+              },
+              companyId
+            }).catch((e) =>
+              logger.error(`[IA] falha ao salvar resposta no ticket: ${e}`)
+            );
+
+            await ticket.update({
+              lastMessage: resultadoIa.reply,
+              sendInactiveMessage: false,
+              amountUsedBotQueues: ticket.amountUsedBotQueues + 1
+            });
+          } else {
+            logger.error(
+              `[IA] resposta NAO foi enviada ao WhatsApp ticket=${ticket.id} (conexão instável)`
+            );
+          }
 
           await ticket.reload();
           return;
@@ -5345,7 +5384,7 @@ const wbotUserJid = wbot?.user?.id;
          profilePicUrl = await wbot.profilePictureUrl(group.id, "image");
        } catch (e) {
          Sentry.captureException(e);
-         profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
+         profilePicUrl = `${getFrontendUrl()}/nopicture.png`;
        }
       const contactData = {
         name: nameGroup,

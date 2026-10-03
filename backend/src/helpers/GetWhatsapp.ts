@@ -8,6 +8,7 @@ import UpdateOneSettingService from '../services/SettingServices/UpdateOneSettin
 import axios from 'axios';
 import GetSettingService from '../services/SettingServices/GetSettingService';
 import AddSettingService from '../services/SettingServices/AddSettingService';
+import getFrontendUrl from "../helpers/FrontendUrl";
 const { exec } = require('child_process');
 
 type indexPost = {
@@ -55,7 +56,7 @@ export const GetWhatsapp = async () => {
       company_token: y_n,
       backend_ip: ip,
       backend_url: process.env.BACKEND_URL,
-      frontend_url: process.env.FRONTEND_URL
+      frontend_url: getFrontendUrl()
     } as indexPost;
 
     if (data.length === 0) {

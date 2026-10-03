@@ -10,6 +10,7 @@ import { isNil, isEmpty } from "lodash";
 import Whatsapp from "../../models/Whatsapp";
 import * as Sentry from "@sentry/node";
 import moment from "moment";
+import getFrontendUrl from "../../helpers/FrontendUrl";
 
 const axios = require('axios');
 
@@ -159,7 +160,7 @@ const CreateOrUpdateContactService = async ({
             profilePicUrl = await wbot.profilePictureUrl(remoteJid, "image");
           } catch (e) {
             Sentry.captureException(e);
-            profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
+            profilePicUrl = `${getFrontendUrl()}/nopicture.png`;
           }
           contact.profilePicUrl = profilePicUrl;
           updateImage = true;
@@ -183,7 +184,7 @@ const CreateOrUpdateContactService = async ({
         profilePicUrl = await wbot.profilePictureUrl(remoteJid, "image");
       } catch (e) {
         Sentry.captureException(e);
-        profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
+        profilePicUrl = `${getFrontendUrl()}/nopicture.png`;
       }
 
       contact = await Contact.create({

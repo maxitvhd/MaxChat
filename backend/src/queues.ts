@@ -42,6 +42,7 @@ import TicketTag from "./models/TicketTag";
 import Tag from "./models/Tag";
 import { delay } from "@whiskeysockets/baileys";
 import Plan from "./models/Plan";
+import getFrontendUrl from "./helpers/FrontendUrl";
 
 const connection = process.env.REDIS_URI || "";
 const limiterMax = process.env.REDIS_OPT_LIMITER_MAX || 1;
@@ -1628,7 +1629,7 @@ async function handleInvoiceCreate() {
 <br>
 Vencimento: ${vencimento}<br>
 Valor: ${plan.value}<br>
-Link: ${process.env.FRONTEND_URL}/financeiro<br>
+Link: ${getFrontendUrl()}/financeiro<br>
 <br>
 Qualquer duvida estamos a disposição!
             `// plain text body

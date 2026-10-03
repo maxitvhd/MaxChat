@@ -9,6 +9,7 @@ import Invoices from "../models/Invoices";
 import Setting from "../models/Setting";
 import { getIO } from "../libs/socket";
 import axios from 'axios';
+import getFrontendUrl from "../helpers/FrontendUrl";
 
 dotenv.config();
 
@@ -40,8 +41,8 @@ export const createSubscription = async (
   // Dados para criar a preferência de pagamento
   const data = {
     back_urls: {
-      success: `${process.env.FRONTEND_URL}/financeiro`,
-      failure: `${process.env.FRONTEND_URL}/financeiro`
+      success: `${getFrontendUrl()}/financeiro`,
+      failure: `${getFrontendUrl()}/financeiro`
     },
     auto_return: "approved",
     items: [

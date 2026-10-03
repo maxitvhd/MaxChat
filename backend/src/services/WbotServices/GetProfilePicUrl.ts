@@ -1,6 +1,7 @@
 import GetDefaultWhatsApp from "../../helpers/GetDefaultWhatsApp";
 import { getWbot } from "../../libs/wbot";
 import Contact from "../../models/Contact";
+import getFrontendUrl from "../../helpers/FrontendUrl";
 
 const GetProfilePicUrl = async (
   number: string,
@@ -15,7 +16,7 @@ const GetProfilePicUrl = async (
   try {
     profilePicUrl = await wbot.profilePictureUrl(contact && contact.isGroup ? contact.remoteJid:`${number}@s.whatsapp.net`, "image");
   } catch (error) {
-    profilePicUrl = `${process.env.FRONTEND_URL}/nopicture.png`;
+    profilePicUrl = `${getFrontendUrl()}/nopicture.png`;
   }
 
   return profilePicUrl;

@@ -10,6 +10,7 @@ import { SendRefreshToken } from "../helpers/SendRefreshToken";
 import { RefreshTokenService } from "../services/AuthServices/RefreshTokenService";
 import FindUserFromToken from "../services/AuthServices/FindUserFromToken";
 import User from "../models/User";
+import getFrontendUrl from "../helpers/FrontendUrl";
 
 export const forgotPassword = async (req: Request, res: Response): Promise<Response> => {
   const { email } = req.body;
@@ -23,7 +24,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<Respo
   }
 
   const token = crypto.randomBytes(32).toString("hex");
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+  const resetUrl = `${getFrontendUrl()}/reset-password?token=${token}`;
 
   user.passwordResetToken = token;
   user.passwordResetExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes

@@ -80,6 +80,13 @@ const recuperarMemoria = async (
 
   try {
     const vetor = await gerarEmbedding(settings, mensagem);
+
+    // Garante a coleção antes de buscar: em empresa nova a coleção ainda não
+    // existe e o Qdrant responde 404, o que fazia a busca falhar sempre.
+    await criarColecao({ settings, companyId }, slug, vetor.length).catch(
+      () => null
+    );
+
     const achados = await buscarMemorias({
       settings,
       companyId,
