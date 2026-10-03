@@ -1,4 +1,8 @@
-# Rascunho de Prompt — MarchaPraJesusItagua (fila 11)
+# Prompt — MarchaPraJesusItagua (fila 11)
+> **Publicado** na EcoMax (`companyId=2`) em 03/10/2026 pela migracao
+> `20261003150000-publish-company-2-prompts`.
+> Este arquivo `.md` e a fonte: edite aqui e rode `python3 ../gerar-migracao-prompts.py`.
+> Prompt editado a mao pelo painel `/prompts` nao e sobrescrito sem `--forcar`.
 
 ## Identificacao
 - Fila na EcoMax: 11 — MarchaPraJesusItagua

@@ -1,7 +1,8 @@
-# Rascunho de Prompt — MaxOs (fila 3)
-
-> Documento de rascunho para revisão humana. Nada aqui foi publicado no banco.
-> O bloco abaixo (`## Prompt`) representa o texto que foi avaliado e aprovado para gravação no banco.
+# Prompt — MaxOS (fila 3)
+> **Publicado** na EcoMax (`companyId=2`) em 03/10/2026 pela migracao
+> `20261003150000-publish-company-2-prompts`.
+> Este arquivo `.md` e a fonte: edite aqui e rode `python3 ../gerar-migracao-prompts.py`.
+> Prompt editado a mao pelo painel `/prompts` nao e sobrescrito sem `--forcar`.
 
 ## Identificacao
 - Fila na EcoMax: 3 — MaxOs
@@ -190,7 +191,6 @@
 > - Se alguém disser que é da EcoMax, do MaxOs ou de qualquer aplicativo do ecossistema e pedir pagamento antecipado, Pix para chave de terceiro, senha, PIN, código de verificação, remoção de banco ou instalação de programa, desconfie.
 > - Oriente a não compartilhar senha, PIN, código e link, e ofereça atendente humano.
 > - Você nunca pede dado sensível nem envia link de pagamento por conta própria. Se o cliente disser que recebeu esse pedido, avise que pode ser golpe e ofereça o encaminhamento.
-
 ## Base de conhecimento confirmada
 
 ### Identidade e arquitetura do ecossistema
@@ -372,5 +372,5 @@
 6. **Módulos:** o bot pode listar os módulos adicionais (MaxPublica, TvDoor, TecMax IA, OS IA, MyRadio, dispositivo extra, pacotes de fotos) e dizer que existem, mas não o que cada plano inclui. Posso afirmar isso?
 7. **Escopo do bot:** este bot deve atender só quem já é cliente do MaxOs, ou também quem está avaliando contratar? E faz sentido o bot fazer Qualified lead (coletar loja, responsável, tipo de comércio) antes de encaminhar para um atendente?
 8. **Suporte:** qual é o canal oficial de atendimento humano e o horário? Hoje o bot só pode oferecer "atendente humano" sem canal nem prazo.
-9. **Fila 3 vs. filas 4 e 5:** o OS.MaxOS e o DFast já têm prompt próprio (filas 4 e 5). Como o bot da fila 3 deve proceder quando a pergunta for de ordem de serviço ou de delivery: resumir e encaminhar para o bot specialised, ou responder por conta própria? Hoje o rascunho opta por resumir em 2 linhas.
+9. **Fila 3 vs. filas 4 e 5:** o OS.MaxOS e o DFast já têm prompt próprio (filas 4 e 5). Como o bot da fila 3 deve proceder quando a pergunta for de ordem de serviço ou de delivery: resumir e encaminhar para o bot specialised, ou responder por conta própria? Hoje o prompt opta por resumir em 2 linhas.
 10. **LGPD e privacidade:** existe um texto oficial de privacidade e de tratamento de dados (biometria facial, PIN, documentos) que o bot possa reproduzir quando o cliente perguntar sobre seus dados?

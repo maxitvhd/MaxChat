@@ -90,7 +90,11 @@ import { FlowBuilderModel } from "../../models/FlowBuilder";
 import { IConnections, INodes } from "../WebhookService/DispatchWebHookService";
 import { FlowDefaultModel } from "../../models/FlowDefault";
 import { ActionsWebhookService } from "../WebhookService/ActionsWebhookService";
-import { extrairRota, aplicarRota } from "../AiServices/rotaTriagem";
+import {
+  extrairRota,
+  aplicarRota,
+  ehFilaTriagem
+} from "../AiServices/rotaTriagem";
 import { WebhookModel } from "../../models/Webhook";
 import { add, differenceInMilliseconds } from "date-fns";
 import { FlowCampaignModel } from "../../models/FlowCampaign";
@@ -4945,11 +4949,23 @@ const handleMessage = async (
           historico
         });
 
-if (resultadoIa.respondeu && resultadoIa.reply?.trim()) {
+        if (resultadoIa.respondeu && resultadoIa.reply?.trim()) {
           // A IA pode pedir a troca de fila no fim da resposta (ver prompt da
           // fila Triagem). O marcador é removido antes do envio: o cliente
           // nunca vê a marcação, e a fila só muda se o nome existir.
           const rota = await extrairRota(resultadoIa.reply, companyId);
+
+          // Só a Triagem roteia. Nos prompts de produto o marcador é apagado
+          // do texto (acima) mas ignorado, para nem prompt injection nem
+          // texto do cliente conseguirem mover o ticket.
+          const podeRotear =
+            rota.fila !== null && (await ehFilaTriagem(ticket.queueId));
+
+          if (rota.fila !== null && !podeRotear) {
+            logger.warn(
+              `[ROTA] marcador "${rota.nomeSolicitado}" ignorado: ticket ${ticket.id} não está na Triagem`
+            );
+          }
 
           // Envia direto (sem debounce): o debounce agrupa por ticket.id e
           // cancelava o envio da IA quando o bot legado agendava no mesmo
@@ -4988,7 +5004,9 @@ if (resultadoIa.respondeu && resultadoIa.reply?.trim()) {
             // Aplica a troca de fila depois do envio: se o envio falhar, o
             // ticket continua na Triagem em vez de sumir para outra fila
             // sem o cliente ter recebido nada.
-            await aplicarRota(ticket, companyId, rota.fila);
+            if (podeRotear) {
+              await aplicarRota(ticket, companyId, rota.fila);
+            }
 
             // NÃO persistimos aqui: o Baileys devolve a própria mensagem
             // enviada em `messages.upsert` e o listener a grava com o wid

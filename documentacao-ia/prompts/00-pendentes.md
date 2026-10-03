@@ -1,10 +1,19 @@
 # Mapeamento das filas da EcoMax → base de conhecimento
 
-Status: **rascunho para revisao**. Nada aqui foi publicado no banco de producao.
+Status: **publicado em producao** em 03/10/2026, migracao
+`20261003150000-publish-company-2-prompts`.
+
+Os 13 prompts abaixo estao no banco da EcoMax (`companyId=2`). O texto e o
+gerador sao a fonte; para mudar qualquer coisa, edite os `.md` e rode
+`python3 ../gerar-migracao-prompts.py` (use `--forcar` so para republicar
+texto ja revisado). Prompt editado a mao pelo painel `/prompts` nunca e
+sobrescrito sem o `--forcar`.
+
+O que segue sao os **pontos em aberto** da revisao, nao o estado da publicacao.
 
 ## Filas e origem do conhecimento
 
-| Fila | ID | Rascunho | Origem | Base documental | Confianca |
+| Fila | ID | Prompt | Origem | Base documental | Confianca |
 |---|---|---|---|---|---|
 | MaxCheckout | 2 | `02-maxcheckout.md` | `/Projetos/MaxCheckout` | 86 documentos | alta |
 | MaxOS | 3 | `03-maxos.md` | `/Projetos/MaxOs` | 99 documentos | alta |

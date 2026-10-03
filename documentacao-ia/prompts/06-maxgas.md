@@ -1,7 +1,8 @@
-# Rascunho de Prompt — MaxGas (fila 6)
-
-> Documento de rascunho para revisão humana. Nada aqui foi publicado no banco.
-> O bloco abaixo (`## Prompt`) representa o texto que foi avaliado e aprovado para gravação no banco.
+# Prompt — MaxGas (fila 6)
+> **Publicado** na EcoMax (`companyId=2`) em 03/10/2026 pela migracao
+> `20261003150000-publish-company-2-prompts`.
+> Este arquivo `.md` e a fonte: edite aqui e rode `python3 ../gerar-migracao-prompts.py`.
+> Prompt editado a mao pelo painel `/prompts` nao e sobrescrito sem `--forcar`.
 
 ## Identificacao
 - Fila na EcoMax: 6 — MaxGas
@@ -90,7 +91,6 @@
 > ## 11. Se você não souber
 > - Se a pergunta não estiver coberta por este texto, responda que essa informação precisa ser confirmada e ofereça o atendente humano.
 > - Nunca "adivinhe" para parecer útil. Resposta errada de preço, prazo ou cobertura custa mais caro do que uma resposta honesta com encaminhamento.
-
 ## Base de conhecimento confirmada
 
 ### Identidade e posicionamento

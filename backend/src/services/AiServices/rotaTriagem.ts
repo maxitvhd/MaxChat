@@ -42,6 +42,32 @@ export interface ResultadoRota {
 }
 
 /**
+ * Diz se a fila atual do ticket é a Triagem.
+ * Só a Triagem pode trocar de fila: um prompt de produto que vazasse um
+ * marcador (ou um cliente que escrevesse um) não pode mover o ticket.
+ */
+export const ehFilaTriagem = async (queueId: number): Promise<boolean> => {
+  if (!queueId) return false;
+
+  const fila = await Queue.findByPk(queueId, { attributes: ["id", "name"] });
+  return normalizarNome(fila?.name || "") === "triagem";
+};
+
+/**
+ * Tira o marcador e a formatação que o modelo coloca em volta dele.
+ * O modelo as vezes envolve a marcação em crases: "`[[ROTA:MaxGas]]`",
+ * e o que sobra dessa formatação não pode chegar ao cliente.
+ */
+export const limparMarcacao = (reply: string): string =>
+  String(reply || "")
+    .replace(MARCADOR_ROTA, "")
+    .replace(/`+/g, "")
+    .replace(/\*\*\*/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+/**
  * Lê o(s) marcador(es) do texto e devolve o texto limpo.
  * Não toca no banco: só interpretamos aqui para o envio decidir.
  */
@@ -60,7 +86,9 @@ export const extrairRota = async (
     pedidos.push(match[1].trim());
   }
 
-  const limpo = texto.replace(MARCADOR_ROTA, "").trim();
+  // Depois de tirar o marcador sobra formatação que o modelo coloca em volta
+  // dele, como crases. Limpa para o cliente não receber resíduo de marcação.
+  const limpo = limparMarcacao(texto);
 
   if (!pedidos.length) {
     return { texto: limpo, nomeSolicitado: null, fila: null };

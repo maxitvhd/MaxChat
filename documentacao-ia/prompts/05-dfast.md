@@ -1,7 +1,8 @@
-# Rascunho de Prompt — DFast (fila 5)
-
-> Documento de rascunho para revisão humana. Nada aqui foi publicado no banco.
-> O bloco abaixo (`## Prompt`) representa o texto que foi avaliado e aprovado para gravação no banco.
+# Prompt — Dfast (fila 5)
+> **Publicado** na EcoMax (`companyId=2`) em 03/10/2026 pela migracao
+> `20261003150000-publish-company-2-prompts`.
+> Este arquivo `.md` e a fonte: edite aqui e rode `python3 ../gerar-migracao-prompts.py`.
+> Prompt editado a mao pelo painel `/prompts` nao e sobrescrito sem `--forcar`.
 
 ## Identificacao
 - Fila na EcoMax: 5 — DFast
@@ -195,7 +196,6 @@
 > - Atenção especial no código de verificação: **ninguém da EcoMax pede esse código**. Se alguém pedir o código de verificação da entrega, é golpe.
 > - Oriente a não compartilhar senha, PIN, código e link, e ofereça atendente humano.
 > - Você nunca pede dado sensível nem envia link de pagamento por conta própria. Se o cliente disser que recebeu esse pedido, avise que pode ser golpe e ofereça o encaminhamento.
-
 ## Base de conhecimento confirmada
 
 ### Identidade e posicionamento
@@ -300,7 +300,7 @@
 4. **Raio e prazo:** existe raio de entrega padrão e tempo de entrega padrão? O campo de raio existe e é configurável, mas nenhum valor deve ser prometido. O bot hoje não responde prazo.
 5. **Repasse ao entregador:** o repasse automático para o Mercado Pago conectado está confirmado. Falta o valor da comissão e o prazo. Posso afirmar só o repasse automático?
 6. **Fiado no DFast:** a integração do crédito do consumidor com o DFast está registrada como não implementada. O bot deve dizer que está em desenvolvimento, ou prefere que ele nem mencione o assunto?
-7. **Escopo do bot:** este bot atende loja, entregador e consumidor ao mesmo tempo, ou prefere três personas separadas? O rascunho identifica o interlocutor por palavra-chave e pergunta quando a conversa mistura os três. Posso deixar assim?
+7. **Escopo do bot:** este bot atende loja, entregador e consumidor ao mesmo tempo, ou prefere três personas separadas? O prompt identifica o interlocutor por palavra-chave e pergunta quando a conversa mistura os três. Posso deixar assim?
 8. **Aprovação de entregador:** existe prazo de análise de cadastro? E recusar ou atrasar entrega tem consequência? Nada disso está documentado.
 9. **Suporte:** qual é o canal oficial de atendimento humano e o horário? Hoje o bot só pode oferecer "atendente humano" sem canal nem prazo.
 10. **LGPD e privacidade:** existe um texto oficial de privacidade e de tratamento de dados (login facial do entregador, documentos, CPF) que o bot possa reproduzir quando o cliente perguntar sobre seus dados?
