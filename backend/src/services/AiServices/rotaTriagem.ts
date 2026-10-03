@@ -74,15 +74,21 @@ const pareceNomeDeFila = (pedido: string, fila: string): boolean => {
   if (!pedido || !fila) return false;
   if (fila.includes(pedido)) return true;
 
-  const limite = Math.max(
-    2,
-    Math.floor(fila.length * 0.34) // "maxicote" x "maxcheckout" = 3 erros em 11
-  );
+  // A tolerancia acompanha o tamanho do nome, mas nunca chega a 2 edicoes:
+  // com nome curto isso aceitaria "os" como MaxOS. Nomes de 4+ caracteres
+  // ganham folga; o piso impede o casamento por acidente.
+  const limite = Math.min(3, Math.max(1, Math.floor(fila.length * 0.3)));
 
-  if (pedido.length < limite) return false;
-  if (Math.abs(fila.length - pedido.length) > limite + 1) return false;
+  if (pedido.length < 4) return false;
+  if (Math.abs(fila.length - pedido.length) > limite) return false;
 
-  return distanciaEdicao(pedido, fila) <= limite;
+  const custo = distanciaEdicao(pedido, fila);
+
+  // Nome curto aceita so 1 erro. Nome longo tolera 2 ou 3, que e o que o
+  // Whisper produz ("MaxiCote" x "MaxCheckout" = 3 edicoes em 11 letras).
+  const maximo = fila.length >= 9 ? limite : 1;
+
+  return custo <= maximo;
 };
 
 export interface ResultadoRota {
