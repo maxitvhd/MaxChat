@@ -11,10 +11,16 @@ conteudo no formato de migracao, para o deploy continuar sendo so por Git.
 
 import json
 import os
+import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE = os.path.dirname(SCRIPT_DIR)
 DOCS = os.path.join(SCRIPT_DIR, "prompts")
+# Com --forcar a migracao sobrescreve o prompt mesmo sem ser sentinela. Use
+# so quando o texto publicado veio da revisao atual e ninguem editou a mao:
+# e o caso de uma republicacao logo apos aprovar o prompt.
+FORCAR = "--forcar" in sys.argv
+
 DESTINO = os.path.join(
     BASE, "backend", "src", "database", "migrations",
     "20261003150000-publish-company-2-prompts.ts",
@@ -133,6 +139,11 @@ def main():
     add(" *")
     add(" * GERADO por documentacao-ia/gerar-migracao-prompts.py - edite o Markdown,")
     add(" * nao este arquivo.")
+    if FORCAR:
+        add(" *")
+        add(" * ATENCAO: gerado com --forcar. Esta versao sobrescreve o prompt mesmo")
+        add(" * quando ele ja foi editado a mao. Use so para republicar texto")
+        add(" * aprovado, e volte a gerar sem a flag depois.")
     add(" */")
     add()
     add("const PROMPTS: Record<string, string> = {")
@@ -200,7 +211,12 @@ def main():
     add("        continue;")
     add("      }")
     add()
-    add("      if (!ehSentinela(atuais[0].prompt)) continue;")
+    if FORCAR:
+        add("      // --forcar: republicacao aprovada. Nao checa a sentinela de proposito,")
+        add("      // porque o texto publicado aqui ja foi revisado.")
+    else:
+        add("      // Preserva edicao manual: so troca prompt que ninguem escreveu a mao.")
+        add("      if (!ehSentinela(atuais[0].prompt)) continue;")
     add()
     add(SQL_UPDATE)
     add("    }")
@@ -212,7 +228,8 @@ def main():
     with open(DESTINO, "w", encoding="utf-8") as f:
         f.write("\n".join(corpo))
 
-    print("\ngerado: " + DESTINO)
+    print("\nmodo: " + ("--forcar (sobrescreve)" if FORCAR else "com sentinela (preserva edicao manual)"))
+    print("gerado: " + DESTINO)
 
 
 if __name__ == "__main__":

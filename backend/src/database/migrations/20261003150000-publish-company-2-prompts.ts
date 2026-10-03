@@ -18,6 +18,10 @@ import { QueryInterface, QueryTypes } from "sequelize";
  *
  * GERADO por documentacao-ia/gerar-migracao-prompts.py - edite o Markdown,
  * nao este arquivo.
+ *
+ * ATENCAO: gerado com --forcar. Esta versao sobrescreve o prompt mesmo
+ * quando ele ja foi editado a mao. Use so para republicar texto
+ * aprovado, e volte a gerar sem a flag depois.
  */
 
 const PROMPTS: Record<string, string> = {
@@ -108,7 +112,8 @@ module.exports = {
         continue;
       }
 
-      if (!ehSentinela(atuais[0].prompt)) continue;
+      // --forcar: republicacao aprovada. Nao checa a sentinela de proposito,
+      // porque o texto publicado aqui ja foi revisado.
 
       await queryInterface.sequelize.query(
         'UPDATE "Prompts" SET "prompt" = :prompt, "updatedAt" = NOW() WHERE id = :id',
