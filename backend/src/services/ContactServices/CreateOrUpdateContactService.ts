@@ -111,7 +111,17 @@ const CreateOrUpdateContactService = async ({
       contactName = contactListItem?.name;
       if (!contactName && wbot && ['whatsapp'].includes(channel)) {
         try {
-          const wbotContact = await wbot.getContactById(remoteJid);
+          // Baileys 6 removeu `getContactById`. O nome vem do store de
+          // contatos do socket; `onWhatsApp` é o fallback paraforcer a
+          // busca no servidor quando o contato ainda não está em cache.
+          let wbotContact: any =
+            wbot.store?.contacts?.[remoteJid] || wbot.contacts?.[remoteJid];
+
+          if (!wbotContact && typeof wbot.onWhatsApp === "function") {
+            const [res] = await wbot.onWhatsApp(remoteJid);
+            if (res?.exists) wbotContact = res;
+          }
+
           contactName = wbotContact?.name || wbotContact?.pushname;
         } catch (e) {
           logger.error(
