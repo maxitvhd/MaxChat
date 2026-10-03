@@ -95,6 +95,10 @@ import {
   aplicarRota,
   ehFilaTriagem
 } from "../AiServices/rotaTriagem";
+import {
+  ehMensagemDeAudio,
+  transcreverAudioDoWhatsApp
+} from "../AiServices/SttFromWhatsAppService";
 import { WebhookModel } from "../../models/Webhook";
 import { add, differenceInMilliseconds } from "date-fns";
 import { FlowCampaignModel } from "../../models/FlowCampaign";
@@ -4902,6 +4906,54 @@ const handleMessage = async (
     // Módulo de IA por empresa.
     // Substitui apenas o passo do bot: se a IA responder, envia e não chama
     // o sayChatbot legado. Qualquer falha da IA cai no fluxo normal abaixo.
+    if (!msg.key.fromMe && ehMensagemDeAudio(msg)) {
+      // O getBodyMessage devolve a string "Áudio" para áudio. Sem transcrever,
+      // a IA tratava essa palavra como se fosse a mensagem do cliente e
+      // respondia no escuro. Aqui o áudio vira texto de verdade; se não
+      // der para entender, o cliente recebe um pedido para escrever.
+      try {
+        const stt = await transcreverAudioDoWhatsApp({
+          msg,
+          wbot,
+          companyId
+        });
+
+        if (stt.transcreveu) {
+          bodyMessage = stt.texto;
+
+          // Guarda a transcrição no histórico: sem isso as próximas mensagens
+          // da IA recebem "[Áudio transcrito]" em vez da fala do cliente.
+          await Message.update(
+            { body: stt.texto },
+            { where: { ticketId: ticket.id, fromMe: false, body: "Áudio" } }
+          );
+        } else {
+          logger.warn(
+            `[STT] ticket=${ticket.id} sem transcrição (${stt.erro}); pedindo para o cliente escrever`
+          );
+
+          await ticket.update({ lastMessage: "Áudio" });
+
+          await wbot.sendMessage(
+            msg.key.remoteJid ||
+              `${ticket.contact.number}@${
+                ticket.isGroup ? "g.us" : "s.whatsapp.net"
+              }`,
+            {
+              text:
+                "Não consegui entender esse áudio. Pode enviar sua pergunta por escrito, por favor?"
+            }
+          );
+
+          return;
+        }
+      } catch (e) {
+        Sentry.captureException(e);
+        logger.error(`[STT] falha inesperada ao transcrever áudio: ${(e as Error).message}`);
+        return;
+      }
+    }
+
     if (!msg.key.fromMe && bodyMessage?.trim()) {
       try {
         // Prompt da fila tem prioridade sobre o prompt da conexão: é ele que
