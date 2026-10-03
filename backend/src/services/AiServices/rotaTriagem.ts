@@ -18,6 +18,9 @@
  *              A escolha do cliente é o que move o ticket.
  */
 import logger from "../../utils/logger";
+import ShowAiProviderSettingsService from "../AiProviderSettingsServices/ShowAiProviderSettingsService";
+import { executarResposta, resolverMotor } from "./ReplyEngineService";
+import { AiSettingsLike } from "./types";
 import Queue from "../../models/Queue";
 import CreateLogTicketService from "../TicketServices/CreateLogTicketService";
 
@@ -72,7 +75,9 @@ const distanciaEdicao = (a: string, b: string): number => {
  */
 const pareceNomeDeFila = (pedido: string, fila: string): boolean => {
   if (!pedido || !fila) return false;
-  if (fila.includes(pedido)) return true;
+
+  // Substring só vale com nome longo: sem isso "os" casava com "MaxOS".
+  if (pedido.length >= 4 && fila.includes(pedido)) return true;
 
   // A tolerancia acompanha o tamanho do nome, mas nunca chega a 2 edicoes:
   // com nome curto isso aceitaria "os" como MaxOS. Nomes de 4+ caracteres
@@ -99,6 +104,59 @@ export interface ResultadoRota {
   /** fila encontrada na empresa, quando o nome bater */
   fila: Queue | null;
 }
+
+/**
+ * Pergunta à IA qual fila o cliente quer, usando a mensagem como está.
+ * Só aceita um nome que exista de verdade na lista: a IA pode inventar, e
+ * nesse caso o ticket fica na Triagem.
+ */
+const adivinharFilaPorIa = async (
+  mensagem: string,
+  lista: Queue[],
+  companyId: number
+): Promise<Queue | null> => {
+  const nomes = lista.map((f) => f.name).join(", ");
+
+  try {
+    // Chama o motor direto, sem passar pelo MessageAiBridge: a ponte grava a
+    // pergunta e a resposta na memoria Qdrant, e essa classificacao nao e
+    // conversa de cliente. Poluir a memoria piora as respostas seguintes.
+    const registro = await ShowAiProviderSettingsService({ companyId });
+    const settings = registro.toJSON() as unknown as AiSettingsLike;
+
+    const resposta = await executarResposta({
+      settings,
+      message: mensagem,
+      engine: resolverMotor({ settings, replyEngineDoPrompt: null }),
+      systemPrompt:
+        "Voce identifica em qual empresa o cliente quer falar. " +
+        `As empresas sao: ${nomes}. ` +
+        "Responda APENAS com o nome exato de uma empresa da lista, sem " +
+        "frase e sem pontuacao. Se nenhuma combinar, responda exatamente NENHUMA.",
+      historico: [],
+      maxTokens: 60
+    });
+
+    const nome = String(resposta?.reply || "")
+      .replace(/\[\[.*?\]\]/g, "")
+      .trim()
+      .replace(/[.]+$/, "")
+      .trim();
+
+    if (!nome || /^nenhuma$/i.test(nome)) return null;
+
+    const alvo = normalizarNome(nome);
+    const achada =
+      lista.find((f) => normalizarNome(f.name) === alvo) ||
+      lista.find((f) => pareceNomeDeFila(alvo, normalizarNome(f.name))) ||
+      null;
+
+    return achada || null;
+  } catch (e) {
+    logger.warn(`[ROTA] IA nao ajudou a identificar a fila: ${(e as Error).message}`);
+    return null;
+  }
+};
 
 /**
  * Diz se a fila atual do ticket é a Triagem.
@@ -132,7 +190,8 @@ export const limparMarcacao = (reply: string): string =>
  */
 export const extrairRota = async (
   reply: string,
-  companyId: number
+  companyId: number,
+  mensagemDoCliente?: string
 ): Promise<ResultadoRota> => {
   const texto = String(reply || "");
 
@@ -199,6 +258,22 @@ export const extrairRota = async (
   }
 
   if (!encontrada) {
+    // O Whisper estraga o nome do produto: "MaxCheckout" vira "MaxiCode",
+    // "HolyHub" vira "o leu", "BeatLove" vira "beijo novo". Distância de
+    // edição não recupera casos desse tipo, então a IA escolhe entre as
+    // filas reais da empresa. Ela é muito melhor em reconhecer nome
+    // ditado do que comparação de string.
+    const adivinhada = mensagemDoCliente
+      ? await adivinharFilaPorIa(mensagemDoCliente, lista, companyId)
+      : null;
+
+    if (adivinhada) {
+      logger.info(
+        `[ROTA] "${nomeSolicitado}" nao casou com nenhuma fila; a IA entendeu que era "${adivinhada.name}"`
+      );
+      return { texto: limpo, nomeSolicitado, fila: adivinhada };
+    }
+
     logger.warn(
       `[ROTA] fila não encontrada para "${nomeSolicitado}"; ticket permanece na Triagem`
     );

@@ -5012,7 +5012,14 @@ const handleMessage = async (
           // A IA pode pedir a troca de fila no fim da resposta (ver prompt da
           // fila Triagem). O marcador é removido antes do envio: o cliente
           // nunca vê a marcação, e a fila só muda se o nome existir.
-          const rota = await extrairRota(resultadoIa.reply, companyId);
+          // A mensagem do cliente vai junto: quando o Whisper estraga o nome
+          // do produto no marcador, a IA usa o texto original para escolher
+          // a fila certa.
+          const rota = await extrairRota(
+            resultadoIa.reply,
+            companyId,
+            bodyMessage
+          );
 
           // Só a Triagem roteia. Nos prompts de produto o marcador é apagado
           // do texto (acima) mas ignorado, para nem prompt injection nem
