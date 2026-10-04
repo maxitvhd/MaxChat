@@ -6,7 +6,10 @@ import nodemailer from "nodemailer";
 import { Op } from "sequelize";
 
 import AuthUserService from "../services/UserServices/AuthUserService";
-import { SendRefreshToken } from "../helpers/SendRefreshToken";
+import {
+  SendRefreshToken,
+  refreshCookieOptions
+} from "../helpers/SendRefreshToken";
 import { RefreshTokenService } from "../services/AuthServices/RefreshTokenService";
 import FindUserFromToken from "../services/AuthServices/FindUserFromToken";
 import User from "../models/User";
@@ -128,7 +131,7 @@ export const remove = async (
     const user = await User.findByPk(id);
     await user.update({ online: false });
   }
-  res.clearCookie("jrt");
+  res.clearCookie("jrt", refreshCookieOptions());
 
   return res.send();
 };

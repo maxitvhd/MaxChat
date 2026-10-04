@@ -39,17 +39,38 @@ const useAuth = () => {
       },
       async (error) => {
         const originalRequest = error.config;
-        if (error?.response?.status === 403 && !originalRequest._retry) {
+        const status = error?.response?.status;
+        const isRefreshCall = /\/auth\/refresh_token/.test(
+          originalRequest?.url || ""
+        );
+
+        // 401 e 403 sao as duas formas de sessao caducada: 403 quando o token
+        // JWT venceu e 401 quando o header nem chegou. Antes so o 403 renovava e
+        // o 401 caia direto no logout, ejetando o usuario no meio do uso.
+        // Agora os dois tentam renovar uma vez so.
+        if (
+          (status === 401 || status === 403) &&
+          originalRequest &&
+          !originalRequest._retry &&
+          !isRefreshCall
+        ) {
           originalRequest._retry = true;
 
-          const { data } = await api.post("/auth/refresh_token");
-          if (data) {
+          try {
+            const { data } = await api.post("/auth/refresh_token");
             localStorage.setItem("token", JSON.stringify(data.token));
             api.defaults.headers.Authorization = `Bearer ${data.token}`;
+            return api(originalRequest);
+          } catch (refreshError) {
+            // O refresh em si falhou: so agora a sessao esta mesmo perdida.
+            localStorage.removeItem("token");
+            api.defaults.headers.Authorization = undefined;
+            setIsAuth(false);
+            return Promise.reject(refreshError);
           }
-          return api(originalRequest);
         }
-        if (error?.response?.status === 401) {
+
+        if (status === 401 || isRefreshCall) {
           localStorage.removeItem("token");
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);

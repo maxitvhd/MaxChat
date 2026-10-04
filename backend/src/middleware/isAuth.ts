@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from "express";
 
 import AppError from "../errors/AppError";
 import authConfig from "../config/auth";
+import logger from "../utils/logger";
 
 import { getIO } from "../libs/socket";
 import ShowUserService from "../services/UserServices/ShowUserService";
@@ -37,7 +38,13 @@ const isAuth = async (req: Request, res: Response, next: NextFunction): Promise<
     const decoded = verify(token, authConfig.secret);
     const { id, profile, companyId } = decoded as TokenPayload;
 
-    updateUser(id, companyId);
+    // Fica sem await de proposito: e um write de updatedAt/online em toda
+    // requisicao, e esperar tornaria a autenticacao tao lenta quanto o banco.
+    // Precisa do catch porque no Node 20 uma rejeicao nao tratada derruba o
+    // processo inteiro, levando junto os sockets e o horario de todo mundo.
+    updateUser(id, companyId).catch(err => {
+      logger.error(`isAuth: falha ao marcar usuario ${id} como online`, err);
+    });
 
     req.user = {
       id,
