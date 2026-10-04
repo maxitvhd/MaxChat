@@ -49,14 +49,14 @@ class Message extends Model<Message> {
   @Column(DataType.STRING)
   get mediaUrl(): string | null {
     if (this.getDataValue("mediaUrl")) {
-      // PROXY_PORT so entra na URL quando o BACKEND_URL ainda nao tem porta.
-      // Sem esta regra a midia saia como https://dominio:8080/public/... e a
-      // porta 8080 nao e publicada: audio e video nao abriam no chat.
+      // PROXY_PORT so entra quando BACKEND_URL nao e uma URL completa.
+      // Se o BACKEND_URL ja e o endereco publico (https://dominio), anexar a
+      // porta do processoInterno produzia https://dominio:8080/public/... e a
+      // midia nao carregava: audio e video nao abriam no chat.
       const base = String(process.env.BACKEND_URL || "").replace(/\/+$/, "");
+      const ehUrlCompleta = /^https?:\/\//i.test(base);
       const porta =
-        process.env.PROXY_PORT && !/:\d+$/.test(base)
-          ? `:${process.env.PROXY_PORT}`
-          : "";
+        !ehUrlCompleta && process.env.PROXY_PORT ? `:${process.env.PROXY_PORT}` : "";
 
       return `${base}${porta}/public/company${this.companyId}/${this.getDataValue(
         "mediaUrl"
