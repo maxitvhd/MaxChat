@@ -1,3 +1,4 @@
+import backendBaseUrl from "../helpers/BackendUrl";
 import {
   Table,
   Column,
@@ -49,16 +50,7 @@ class Message extends Model<Message> {
   @Column(DataType.STRING)
   get mediaUrl(): string | null {
     if (this.getDataValue("mediaUrl")) {
-      // PROXY_PORT so entra quando BACKEND_URL nao e uma URL completa.
-      // Se o BACKEND_URL ja e o endereco publico (https://dominio), anexar a
-      // porta do processoInterno produzia https://dominio:8080/public/... e a
-      // midia nao carregava: audio e video nao abriam no chat.
-      const base = String(process.env.BACKEND_URL || "").replace(/\/+$/, "");
-      const ehUrlCompleta = /^https?:\/\//i.test(base);
-      const porta =
-        !ehUrlCompleta && process.env.PROXY_PORT ? `:${process.env.PROXY_PORT}` : "";
-
-      return `${base}${porta}/public/company${this.companyId}/${this.getDataValue(
+      return `${backendBaseUrl()}/public/company${this.companyId}/${this.getDataValue(
         "mediaUrl"
       )}`;
     }

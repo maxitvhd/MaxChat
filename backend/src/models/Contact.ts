@@ -24,6 +24,7 @@ import ContactWallet from "./ContactWallet";
 import User from "./User";
 import Whatsapp from "./Whatsapp";
 import getFrontendUrl from "../helpers/FrontendUrl";
+import backendBaseUrl from "../helpers/BackendUrl";
 
 @Table
 class Contact extends Model<Contact> {
@@ -114,8 +115,9 @@ class Contact extends Model<Contact> {
   get urlPicture(): string | null {
     if (this.getDataValue("urlPicture")) {
       
-      return this.getDataValue("urlPicture") === 'nopicture.png' ?   `${getFrontendUrl()}/nopicture.png` :
-      `${process.env.BACKEND_URL}${process.env.PROXY_PORT ?`:${process.env.PROXY_PORT}`:""}/public/company${this.companyId}/contacts/${this.getDataValue("urlPicture")}` 
+      return this.getDataValue("urlPicture") === 'nopicture.png'
+        ? `${getFrontendUrl()}/nopicture.png`
+        : `${backendBaseUrl()}/public/company${this.companyId}/contacts/${this.getDataValue("urlPicture")}`;
 
     }
     return null;
