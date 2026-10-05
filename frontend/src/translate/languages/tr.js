@@ -820,8 +820,11 @@ const messages = {
           transfer: "Transfer Et",
           ignore: "Yok Say",
           exportAsPDF: "PDF'ye Aktar",
-          kanbanActions: "Kanban Seçenekleri"
-        },
+          kanbanActions: "Kanban Seçenekleri",
+          delete: "Sil",
+          deleteConfirmTitle: "Konusmeyi sil",
+          deleteConfirmText: "Bu konusma kalici olarak silinecek. Devam etmek istiyor musunuz?",
+          cancel: "Iptal",},
         acceptModal: {
           title: "Sohbeti Kabul Et",
           queue: "Bölüm seç",

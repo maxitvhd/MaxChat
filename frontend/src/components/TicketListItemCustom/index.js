@@ -11,7 +11,7 @@ import { i18n } from "../../translate/i18n";
 import api from "../../services/api";
 import ButtonWithSpinner from "../ButtonWithSpinner";
 import MarkdownWrapper from "../MarkdownWrapper";
-import { List, Tooltip } from "@material-ui/core";
+import { Button, List, Tooltip } from "@material-ui/core";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { TicketsContext } from "../../context/Tickets/TicketsContext";
 import toastError from "../../errors/toastError";
@@ -25,7 +25,7 @@ import TransferTicketModalCustom from "../TransferTicketModalCustom";
 import ShowTicketOpen from "../ShowTicketOpenModal";
 import { isNil } from "lodash";
 import { toast } from "react-toastify";
-import { Done, HighlightOff, Replay, SwapHoriz } from "@material-ui/icons";
+import { DeleteOutline, Done, HighlightOff, Replay, SwapHoriz } from "@material-ui/icons";
 import useCompanySettings from "../../hooks/useSettings/companySettings";
 import { 
     Avatar, 
@@ -38,6 +38,7 @@ import {
     Dialog, 
     DialogTitle, 
     DialogContent, 
+    DialogActions, 
     IconButton, 
     Paper, 
     Divider 
@@ -283,7 +284,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const TicketListItemCustom = ({ setTabOpen, ticket }) => {
+const TicketListItemCustom = ({ setTabOpen, ticket, onTicketDeleted }) => {
     const classes = useStyles();
     const theme = useTheme();
     const history = useHistory();
@@ -295,6 +296,7 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
     const [userTicketOpen, setUserTicketOpen] = useState("");
     const [queueTicketOpen, setQueueTicketOpen] = useState("");
     const [openTicketMessageDialog, setOpenTicketMessageDialog] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     
     // New states for the ticket messages
     const [ticketMessages, setTicketMessages] = useState([]);
@@ -525,6 +527,23 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
         fetchTicketMessages(ticket.id);
     };
 
+    // A exclusao usa DELETE /tickets/:ticketId. Antes nao havia botao nenhum
+    // para isso: o unico "Excluir Conversa" da tela de Chat apontava para a
+    // tabela Chats, que esta vazia, e o usuario ficava sem como remover
+    // conversa da caixa de entrada.
+    const handleConfirmDeleteTicket = async () => {
+        setOpenDeleteDialog(false);
+        try {
+            await api.delete(`/tickets/${ticket.id}`);
+            toast.success(i18n.t("ticketsList.buttons.deleted"));
+            if (typeof onTicketDeleted === "function") {
+                onTicketDeleted(ticket.id);
+            }
+        } catch (err) {
+            toastError(err);
+        }
+    };
+
     return (
         <React.Fragment key={ticket.id}>
             {openAlert && (
@@ -534,6 +553,24 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
                     user={userTicketOpen}
                     queue={queueTicketOpen}
                 />
+            )}
+            {openDeleteDialog && (
+                <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)} fullWidth maxWidth="xs">
+                    <DialogTitle>{i18n.t("ticketsList.buttons.deleteConfirmTitle")}</DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2">
+                            {i18n.t("ticketsList.buttons.deleteConfirmText")}
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setOpenDeleteDialog(false)}>
+                            {i18n.t("ticketsList.buttons.cancel")}
+                        </Button>
+                        <Button onClick={handleConfirmDeleteTicket} color="secondary" variant="contained">
+                            {i18n.t("ticketsList.buttons.delete")}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             )}
             {acceptTicketWithouSelectQueueOpen && (
                 <AcceptTicketWithouSelectQueue
@@ -858,6 +895,17 @@ const TicketListItemCustom = ({ setTabOpen, ticket }) => {
                         )}
                     </span>
                     <span className={classes.secondaryContentSecond} >
+                        <span className={classes.secondaryContentSecond} >
+                            <IconButton
+                                size="small"
+                                aria-label={i18n.t("ticketsList.buttons.delete")}
+                                onClick={e => { e.stopPropagation(); setOpenDeleteDialog(true); }}
+                            >
+                                <Tooltip title={`${i18n.t("ticketsList.buttons.delete")}`}>
+                                    <DeleteOutline fontSize="small" />
+                                </Tooltip>
+                            </IconButton>
+                        </span>
                         {(ticket.status === "closed" && ticket.queueId !== null) && (
                             <ButtonWithSpinner
                                 //color="primary"

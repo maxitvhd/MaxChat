@@ -820,8 +820,11 @@ const messages = {
           transfer: "Transferir",
           ignore: "Ignorar",
           exportAsPDF: "Exportar a PDF",
-          kanbanActions: "Opciones de Kanban"
-        },
+          kanbanActions: "Opciones de Kanban",
+          delete: "Eliminar",
+          deleteConfirmTitle: "Eliminar conversacion",
+          deleteConfirmText: "Esta conversacion se eliminara definitivamente. Desea continuar?",
+          cancel: "Cancelar",},
         acceptModal: {
           title: "Aceptar Chat",
           queue: "Seleccionar sector",

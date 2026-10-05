@@ -425,12 +425,18 @@ const TicketsListCustom = (props) => {
                     ) : (
                         <>
                             {ticketsList.map((ticket) => (
-                                // <List key={ticket.id}>
-                                //     {}
                                 <TicketListItem
                                     ticket={ticket}
                                     key={ticket.id}
                                     setTabOpen={setTabOpen}
+                                    onTicketDeleted={(ticketId) =>
+                                        dispatch({
+                                            type: "DELETE_TICKET",
+                                            payload: ticketId,
+                                            status: status,
+                                            sortDir: sortTickets
+                                        })
+                                    }
                                 />
                                 // </List>
                             ))}
