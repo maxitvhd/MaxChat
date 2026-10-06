@@ -242,7 +242,9 @@ export default function AiSettings() {
       disabled: "Desativado",
       custom: "Nossa API (padrão)",
       azure: "Azure Speech",
-      azureopenai: "Azure OpenAI"
+      azureopenai: "Azure OpenAI",
+      admin: "Somente administradores",
+      all: "Todos os atendentes"
     };
     return mapa[valor] || valor;
   };
@@ -280,7 +282,11 @@ export default function AiSettings() {
     </Grid>
   );
 
-  const campoNumero = (campo, label) => (
+  const campoNumero = (
+    campo,
+    label,
+    { helper = "", passo, min, max } = {}
+  ) => (
     <Grid xs={12} sm={6} md={4} item key={campo}>
       <FormControl className={classes.selectContainer}>
         <TextField
@@ -292,7 +298,9 @@ export default function AiSettings() {
           variant="outlined"
           fullWidth
           value={form[campo] ?? ""}
+          helperText={helper}
           onChange={(e) => alterar(campo, e.target.value)}
+          inputProps={{ step: passo, min, max }}
         />
       </FormControl>
     </Grid>
@@ -617,6 +625,43 @@ export default function AiSettings() {
               </div>
             )}
           </Grid>
+        </Grid>
+      </Paper>
+
+      {/*------------------------------------------------ AGENTE DE VOZ */}
+      <Paper className={classes.section} elevation={1}>
+        <Typography className={classes.sectionTitle}>Agente de voz (operador)</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Assistente que atende o operador dentro do dashboard: consulta tickets,
+          filas e a base de conhecimento, e executa mudanças somente com
+          confirmação na tela.
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid xs={12} sm={6} md={4} item>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={!!form.voiceAgentEnabled}
+                  onChange={(e) => alterar("voiceAgentEnabled", e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Ativar agente de voz"
+            />
+          </Grid>
+          {campoTexto("voiceAgentModel", "Modelo do agente", {
+            helper: "Padrão: qwen3.5:4b (precisa suportar tool-calling)"
+          })}
+          {campoSelecao("voiceAgentPermission", "Quem pode alterar tickets", [
+            "admin",
+            "all"
+          ])}
+          {campoNumero("voiceAgentConfidence", "Confiança mínima", {
+            helper: "0 a 1. Padrão 0.6",
+            passo: 0.05,
+            min: 0,
+            max: 1
+          })}
         </Grid>
       </Paper>
 

@@ -199,6 +199,28 @@ class AiProviderSettings extends Model<AiProviderSettings> {
   @Column
   memoryCollection: string;
 
+  // ------------------------------------------- Agente de voz (operador)
+  /** Liga/desliga o agente de voz do dashboard. Por empresa. */
+  @Default(false)
+  @Column
+  voiceAgentEnabled: boolean;
+
+  /** Modelo dedicado ao agente: ferramentas exigem mais qualidade que o
+   *  modelo de atendimento, que responde curto. */
+  @Default("qwen3.5:4b")
+  @Column
+  voiceAgentModel: string;
+
+  /** Quem pode falar com o agente: "admin" ou "all". */
+  @Default("admin")
+  @Column
+  voiceAgentPermission: string;
+
+  /** Confiança mínima para executar ação de escrita sem releitura. */
+  @Default(0.6)
+  @Column
+  voiceAgentConfidence: number;
+
   @CreatedAt
   @Column
   createdAt: Date;

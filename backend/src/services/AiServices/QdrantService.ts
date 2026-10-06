@@ -242,6 +242,11 @@ export interface BuscarMemoriaParams extends QdrantContexto {
   _scoreMinimo?: number;
   /** Quando informado, restringe ao histórico daquele contato. */
   contatoId?: string | number;
+  /**
+   * Filtros extras por igualdade no payload. Usado pela base de conhecimento
+   * para prender a busca na fila mesmo que a coleção já seja exclusiva da base.
+   */
+  filtrosExtras?: Record<string, string | number | boolean | null>;
 }
 
 export const buscarMemorias = async ({
@@ -251,7 +256,8 @@ export const buscarMemorias = async ({
   vetor,
   limite = 5,
   _scoreMinimo = 0,
-  contatoId
+  contatoId,
+  filtrosExtras
 }: BuscarMemoriaParams): Promise<
   { id: string | number; score: number; payload: Record<string, unknown> }[]
 > => {
@@ -272,6 +278,11 @@ export const buscarMemorias = async ({
   if (contatoId !== undefined && contatoId !== null && contatoId !== "") {
     must.push({ key: "contatoId", match: { value: String(contatoId) } });
   }
+
+  Object.entries(filtrosExtras ?? {}).forEach(([chave, valor]) => {
+    if (valor === undefined || valor === null) return;
+    must.push({ key: chave, match: { value: valor } });
+  });
 
   const bruto = await aiRequest<{
     result?: {
@@ -328,6 +339,45 @@ export const apagarColecaoDaEmpresa = async (
     url: joinUrl(url, `/collections/${encodeURIComponent(nome)}`),
     timeout,
     headers
+  });
+
+  return nome;
+};
+
+/**
+ * Apaga só os pontos de um documento, pelo filtro do payload.
+ *
+ * Usado quando um documento é excluído: sem isso os embeddings continuam na
+ * coleção e o agente ainda responde com conteúdo que o usuário já apagou.
+ */
+export const apagarPontosDoDocumento = async (
+  ctx: QdrantContexto,
+  slug: string,
+  documentId: number
+): Promise<string> => {
+  const { url, headers, timeout } = contexto(ctx);
+  const nome = nomeColecaoDaEmpresa(
+    ctx.companyId,
+    slug,
+    ctx.settings.qdrantCollectionPrefix
+  );
+  validarNomeColecao(ctx.companyId, nome, ctx.settings.qdrantCollectionPrefix);
+
+  // Filtro com o id exato: não apaga embedding de outro documento.
+  await aiRequest<unknown>({
+    label: "qdrant-apagar-documento",
+    method: "POST",
+    url: joinUrl(
+      url,
+      `/collections/${encodeURIComponent(nome)}/points/delete?wait=true`
+    ),
+    timeout,
+    headers: { "Content-Type": "application/json", ...headers },
+    data: {
+      filter: {
+        must: [{ key: "documentId", match: { value: Number(documentId) } }]
+      }
+    }
   });
 
   return nome;

@@ -1,6 +1,24 @@
 const messages = {
 	en: {
 	  translations: {
+	    voiceAgent: {
+	      title: "Voice Agent",
+	      help: "Examples: \"how is the dashboard today?\", \"check ticket 12\", \"what does the company say about PIX?\", \"move ticket 12 to the Finance queue\", \"close ticket 12\", \"reply to ticket 12: your request was resolved\".",
+	      disabled: "The voice agent is not active for this company. An admin can turn it on in AI Settings.",
+	      canWrite: "Can change tickets",
+	      readOnly: "Read only",
+	      clear: "Clear conversation",
+	      heard: "Heard:",
+	      record: "Talk to the agent",
+	      stop: "Stop recording",
+	      listening: "Listening...",
+	      placeholder: "Ask about tickets, queues or the company (or use the microphone)",
+	      confirmTitle: "Confirmation needed",
+	      confirmBody: "The agent is about to change the dashboard. Review and confirm below.",
+	      yes: "Yes, do it",
+	      no: "No",
+	    },
+
 		signup: {
 		  title: "Sign Up",
 		  toasts: {
@@ -58,6 +76,7 @@ const messages = {
 			indicators: "Indicators",
 			assessments: "NPS",
 			attendants: "Agents",
+			voiceAgent: "Voice Agent",
 		  },
 		  charts: {
 			perDay: {
@@ -436,6 +455,81 @@ const messages = {
 			max_tokens: "Maximum Response Tokens",
 			actions: "Actions",
 		  },
+		knowledge: {
+		  title: "Knowledge",
+		  promptsHint: "Prompts set how the AI behaves per department. The knowledge base holds the content it looks up to answer.",
+		  tabs: {
+			prompts: "Prompts",
+			knowledge: "Knowledge",
+			file: "File",
+			text: "Text",
+			url: "URL",
+		  },
+		  scope: {
+			all: "All queues",
+		  },
+		  modal: {
+			createBase: "New knowledge base",
+			newDocument: "Add document",
+			testSearch: "Test base search",
+		  },
+		  form: {
+			baseName: "Base name",
+			baseDescription: "Description (optional)",
+			baseQueue: "Apply to queue",
+			queueAll: "Company-wide base only",
+			queueHint: "Picking a queue limits the base to that product's chats. A general base applies to all.",
+			docTitle: "Title (optional)",
+			chooseFile: "Choose file",
+			fileHint: "Accepts .md, .txt, .pdf and .csv, up to 15 MB.",
+			content: "Content",
+			url: "Page link",
+			query: "What do you want to search for?",
+		  },
+		  buttons: {
+			newBase: "New base",
+			addDocument: "Add document",
+			index: "Index",
+			save: "Save",
+			cancel: "Cancel",
+			close: "Close",
+			search: "Search",
+			reindex: "Reindex all",
+			delete: "Delete",
+			testSearch: "Test search",
+		  },
+		  table: {
+			base: "Base",
+			scope: "Scope",
+			document: "Document",
+			kind: "Type",
+			status: "Status",
+			chunks: "chunks",
+			actions: "Actions",
+		  },
+		  empty: {
+			bases: "No base created yet.",
+			documents: "No document in this base.",
+			selectBase: "Pick a base to see its documents.",
+		  },
+		  results: {
+			title: "{{count}} chunk(s) found",
+			empty: "Nothing similar was found in this base.",
+		  },
+		  confirm: {
+			deleteBaseTitle: "Delete base",
+			deleteBaseMessage: "The base and all its documents will be removed. Are you sure?",
+			deleteDocTitle: "Delete document",
+			deleteDocMessage: "This document will be removed from the base. Are you sure?",
+		  },
+		  toast: {
+			baseCreated: "Base created",
+			baseDeleted: "Base deleted",
+			documentAdded: "Document added",
+			documentDeleted: "Document deleted",
+			selectFile: "Choose a file",
+		  },
+		},
 		  confirmationModal: {
 			deleteTitle: "Delete",
 			deleteMessage: "Are you sure? This action cannot be undone!",

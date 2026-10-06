@@ -1,6 +1,24 @@
 const messages = {
   tr: {
     translations: {
+      voiceAgent: {
+        title: "Sesli Asistan",
+        help: "Örnekler: \"panel bugün nasıl?\", \"12 numaralı talebi sorgula\", \"şirket PIX hakkında ne diyor?\", \"12 numaralı talebi Finans kuyruğuna taşı\", \"12 numaralı talebi kapat\", \"12 numaralı talebe cevap ver: talebiniz çözüldü\".",
+        disabled: "Sesli asistan bu şirkette etkin değil. Bir yönetici AI Ayarları'ndan açabilir.",
+        canWrite: "Talep değiştirebilir",
+        readOnly: "Yalnızca okuma",
+        clear: "Sohbeti temizle",
+        heard: "Duyulan:",
+        record: "Asistanla konuş",
+        stop: "Kaydı durdur",
+        listening: "Dinleniyor...",
+        placeholder: "Talepler, kuyruklar veya şirket hakkında sorun (ya da mikrofonu kullanın)",
+        confirmTitle: "Onay gerekli",
+        confirmBody: "Ajan paneli değiştirecek. Aşağıdan kontrol edip onaylayın.",
+        yes: "Evet, yap",
+        no: "Hayır",
+      },
+
       signup: {
         title: "Kayıt Ol",
         toasts: {
@@ -58,6 +76,7 @@ const messages = {
           indicators: "Gösterge",
           assessments: "NPS",
           attendants: "Temsilciler",
+          voiceAgent: "Sesli Asistan",
         },
         charts: {
           perDay: {
@@ -436,6 +455,81 @@ const messages = {
           max_tokens: "Maksimum Yanıt Tokenları",
           actions: "Eylemler",
         },
+      knowledge: {
+        title: "Bilgi",
+        promptsHint: "Promptlar, yapay zekânın sektör bazlı davranışını belirler. Bilgi tabanı ise cevap verirken baktığı içeriği tutar.",
+        tabs: {
+          prompts: "Promptlar",
+          knowledge: "Bilgi",
+          file: "Dosya",
+          text: "Metin",
+          url: "URL",
+        },
+        scope: {
+          all: "Tüm kuyruklar",
+        },
+        modal: {
+          createBase: "Yeni bilgi tabanı",
+          newDocument: "Belge ekle",
+          testSearch: "Taban aramasını dene",
+        },
+        form: {
+          baseName: "Taban adı",
+          baseDescription: "Açıklama (isteğe bağlı)",
+          baseQueue: "Hangi kuyruğa",
+          queueAll: "Sadece şirket geneli taban",
+          queueHint: "Bir kuyruk seçersen taban sadece o ürünün konuşmalarında kullanılır. Genel taban hepsinde geçerlidir.",
+          docTitle: "Başlık (isteğe bağlı)",
+          chooseFile: "Dosya seç",
+          fileHint: ".md, .txt, .pdf ve .csv, en fazla 15 MB.",
+          content: "İçerik",
+          url: "Sayfa bağlantısı",
+          query: "Ne aramak istiyorsun?",
+        },
+        buttons: {
+          newBase: "Yeni taban",
+          addDocument: "Belge ekle",
+          index: "İndeksle",
+          save: "Kaydet",
+          cancel: "İptal",
+          close: "Kapat",
+          search: "Ara",
+          reindex: "Tümünü yeniden indeksle",
+          delete: "Sil",
+          testSearch: "Aramayı dene",
+        },
+        table: {
+          base: "Taban",
+          scope: "Kapsam",
+          document: "Belge",
+          kind: "Tür",
+          status: "Durum",
+          chunks: "parça",
+          actions: "İşlemler",
+        },
+        empty: {
+          bases: "Henüz taban oluşturulmadı.",
+          documents: "Bu tabanda belge yok.",
+          selectBase: "Belgeleri görmek için bir taban seç.",
+        },
+        results: {
+          title: "{{count}} parça bulundu",
+          empty: "Bu tabanda benzer bir şey bulunamadı.",
+        },
+        confirm: {
+          deleteBaseTitle: "Tabanı sil",
+          deleteBaseMessage: "Taban ve tüm belgeleri silinecek. Emin misin?",
+          deleteDocTitle: "Belgeyi sil",
+          deleteDocMessage: "Bu belge tabandan kaldırılacak. Emin misin?",
+        },
+        toast: {
+          baseCreated: "Taban oluşturuldu",
+          baseDeleted: "Taban silindi",
+          documentAdded: "Belge eklendi",
+          documentDeleted: "Belge silindi",
+          selectFile: "Bir dosya seç",
+        },
+      },
         confirmationModal: {
           deleteTitle: "Sil",
           deleteMessage: "Emin misiniz? Bu işlem geri alınamaz!",

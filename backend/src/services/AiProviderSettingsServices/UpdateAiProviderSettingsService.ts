@@ -65,26 +65,48 @@ export const CAMPOS_PERMITIDOS = [
   "qdrantApiKey",
   "qdrantCollectionPrefix",
   "embeddingModel",
-  "memoryCollection"
+  "memoryCollection",
+  "voiceAgentEnabled",
+  "voiceAgentModel",
+  "voiceAgentPermission",
+  "voiceAgentConfidence"
 ] as const;
+
+/** Quem pode acionar o agente de voz para alterar tickets. */
+export const PERMISSOES_VOZ = ["admin", "all"] as const;
 
 const BOOLEANOS = new Set([
   "enabled",
   "fallbackOnLowConfidence",
   "memoryEnabled",
-  "qdrantEnabled"
+  "qdrantEnabled",
+  "voiceAgentEnabled"
 ]);
 
 const NUMERICOS = new Set([
   "routingConfidenceThreshold",
   "requestTimeout",
   "maxHistoryMessages",
-  "ttsSpeed"
+  "ttsSpeed",
+  "voiceAgentConfidence"
 ]);
 
 const TIPOS_DE_CHAVE = new Set<string>(SECRET_FIELDS);
 
 const normalizar = (campo: string, valor: unknown): unknown => {
+  // Permissão tem lista fechada: texto solto não vira regra de acesso.
+  if (campo === "voiceAgentPermission") {
+    const texto = String(valor ?? "").trim().toLowerCase();
+    return (PERMISSOES_VOZ as readonly string[]).includes(texto) ? texto : undefined;
+  }
+
+  // Confiança entre 0 e 1; fora disso o backend recusa o valor.
+  if (campo === "voiceAgentConfidence") {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero) || numero < 0 || numero > 1) return undefined;
+    return numero;
+  }
+
   if (BOOLEANOS.has(campo)) {
     if (typeof valor === "boolean") return valor;
     return ["true", "1", "enabled", "sim"].includes(

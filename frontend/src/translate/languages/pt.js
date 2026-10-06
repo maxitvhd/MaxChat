@@ -1,6 +1,24 @@
 const messages = {
   pt: {
     translations: {
+      voiceAgent: {
+        title: "Agente de voz",
+        help: "Exemplos: “como está o painel hoje?”, “consulta o ticket 12”, “o que a empresa diz sobre PIX?”, “move o ticket 12 para a fila Financeiro”, “fecha o ticket 12”, “responde o ticket 12: seu pedido foi resolvido”.",
+        disabled: "O agente de voz não está ativo nesta empresa. Um administrador pode ligá-lo em Configurações de IA.",
+        canWrite: "Pode alterar tickets",
+        readOnly: "Somente leitura",
+        clear: "Limpar conversa",
+        heard: "Ouvi:",
+        record: "Falar com o agente",
+        stop: "Parar de gravar",
+        listening: "Ouvindo...",
+        placeholder: "Pergunte sobre tickets, filas ou a empresa (ou use o microfone)",
+        confirmTitle: "Confirmação necessária",
+        confirmBody: "O agente vai alterar o painel. Confira e confirme abaixo.",
+        yes: "Sim, fazer",
+        no: "Não",
+      },
+
 
       signup: {
         title: "Cadastre-se",
@@ -60,6 +78,7 @@ const messages = {
           indicators: "Indicadores",
           assessments: "NPS",
           attendants: "Atendentes",
+          voiceAgent: "Agente de voz",
           performance:"Performances"
         },
         charts: {
@@ -445,6 +464,81 @@ const messages = {
           max_tokens: "Máximo Tokens Resposta",
           actions: "Ações",
         },
+      knowledge: {
+        title: "Conhecimento",
+        promptsHint: "Os prompts definem o comportamento da IA por setor. A base de conhecimento guarda o conteúdo que ela consulta para responder.",
+        tabs: {
+          prompts: "Prompts",
+          knowledge: "Conhecimento",
+          file: "Arquivo",
+          text: "Texto",
+          url: "URL",
+        },
+        scope: {
+          all: "Todas as filas",
+        },
+        modal: {
+          createBase: "Nova base de conhecimento",
+          newDocument: "Adicionar documento",
+          testSearch: "Testar busca na base",
+        },
+        form: {
+          baseName: "Nome da base",
+          baseDescription: "Descrição (opcional)",
+          baseQueue: "Aplicar a qual fila",
+          queueAll: "Somente a base geral da empresa",
+          queueHint: "Escolhendo uma fila, a base só entra nas conversas daquele produto. Base geral vale para todos.",
+          docTitle: "Título (opcional)",
+          chooseFile: "Escolher arquivo",
+          fileHint: "Aceita .md, .txt, .pdf e .csv, até 15 MB.",
+          content: "Conteúdo",
+          url: "Link da página",
+          query: "O que você quer buscar?",
+        },
+        buttons: {
+          newBase: "Nova base",
+          addDocument: "Adicionar documento",
+          index: "Indexar",
+          save: "Salvar",
+          cancel: "Cancelar",
+          close: "Fechar",
+          search: "Buscar",
+          reindex: "Reindexar tudo",
+          delete: "Excluir",
+          testSearch: "Testar busca",
+        },
+        table: {
+          base: "Base",
+          scope: "Escopo",
+          document: "Documento",
+          kind: "Tipo",
+          status: "Situação",
+          chunks: "trechos",
+          actions: "Ações",
+        },
+        empty: {
+          bases: "Nenhuma base criada ainda.",
+          documents: "Nenhum documento nesta base.",
+          selectBase: "Escolha uma base para ver os documentos.",
+        },
+        results: {
+          title: "{{count}} trecho(s) encontrado(s)",
+          empty: "Nada parecido foi encontrado nesta base.",
+        },
+        confirm: {
+          deleteBaseTitle: "Excluir base",
+          deleteBaseMessage: "A base e todos os documentos dela serão apagados. Você tem certeza?",
+          deleteDocTitle: "Excluir documento",
+          deleteDocMessage: "Esse documento será removido da base. Você tem certeza?",
+        },
+        toast: {
+          baseCreated: "Base criada",
+          baseDeleted: "Base excluída",
+          documentAdded: "Documento adicionado",
+          documentDeleted: "Documento excluído",
+          selectFile: "Escolha um arquivo",
+        },
+      },
         confirmationModal: {
           deleteTitle: "Excluir",
           deleteMessage: "Você tem certeza? Essa ação não pode ser revertida!",

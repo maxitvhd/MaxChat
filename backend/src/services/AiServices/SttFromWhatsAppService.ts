@@ -30,10 +30,14 @@ import { AiSettingsLike } from "./types";
 const BINARIO_FFMPEG = ffmpegInstaller?.path || "/usr/bin/ffmpeg";
 
 /** WhatsApp manda voz em Opus/Ogg, mas audioMessage pode vir como mp4. */
-const extensaoDoMime = (mimeType: string): string => {
+export const extensaoDoMime = (mimeType: string): string => {
   const tipo = String(mimeType || "").split(";")[0].trim().toLowerCase();
   if (tipo === "audio/mp4" || tipo === "audio/m4a" || tipo === "audio/x-m4a") {
     return ".m4a";
+  }
+  // Navegador (MediaRecorder do agente de voz) grava em webm/opus.
+  if (tipo === "audio/webm" || tipo === "audio/x-webm" || tipo === "video/webm") {
+    return ".webm";
   }
   if (tipo === "audio/mpeg" || tipo === "audio/mp3") return ".mp3";
   if (tipo === "audio/wav" || tipo === "audio/x-wav" || tipo === "audio/wave") {
@@ -69,7 +73,7 @@ export interface ResultadoStt {
  * Converte o buffer para WAV 16kHz mono, que é o formato nativo do Whisper.
  * Usa uma pasta temporária porque o arquivo só existe durante a transcrição.
  */
-const converterParaWav = async (
+export const converterParaWav = async (
   buffer: Buffer,
   mimeType: string
 ): Promise<{ arquivo: string; limpar: () => void }> => {

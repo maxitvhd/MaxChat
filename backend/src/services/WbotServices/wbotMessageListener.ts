@@ -5005,6 +5005,9 @@ const handleMessage = async (
           modeloDoPrompt: promptDaFila?.model ?? null,
           temperatura: promptDaFila?.temperature,
           maxTokens: promptDaFila?.maxTokens,
+          // Define quais bases de conhecimento entram: a geral da empresa e
+          // as amarradas a esta fila/produto.
+          queueId: ticket.queueId,
           historico
         });
 

@@ -29,6 +29,7 @@ import {
   registrarMemoria,
   criarColecao
 } from "./QdrantService";
+import { recuperarConhecimento } from "./KnowledgeRetrievalService";
 
 export interface MensagemAiContexto {
   companyId: number;
@@ -48,6 +49,11 @@ export interface MensagemAiContexto {
   maxTokens?: number | null;
   /** identificador estável do contato, para isolar a memória */
   contatoId?: string | number;
+  /**
+   * Fila/produto do ticket. Define quais bases de conhecimento entram na
+   * conversa: entra a base geral da empresa e as bases desta fila.
+   */
+  queueId?: number | null;
 }
 
 export interface MensagemAiResultado {
@@ -60,6 +66,8 @@ export interface MensagemAiResultado {
   motivo?: string;
   /** memórias recuperadas do Qdrant */
   memorias?: number;
+  /** trechos da base de conhecimento recuperados */
+  conhecimento?: number;
 }
 
 /**
@@ -248,6 +256,14 @@ export const processarMensagemComIa = async (
     memorias = r.total;
   }
 
+  // ---- 1b) base de conhecimento ---------------------------------------
+  // Entra a base geral da empresa e as bases da fila deste ticket. Base de
+  // outro produto não é lida. Falha aqui nunca derruba a resposta.
+  const conhecimento = await recuperarConhecimento(
+    { settings, companyId, queueId: ctx.queueId },
+    mensagem
+  );
+
   // ---- 2) system prompt ------------------------------------------------
   const blocos: string[] = [];
 
@@ -260,6 +276,9 @@ export const processarMensagemComIa = async (
     blocos.push(
       `Histórico relevante recuperado da base de memória:\n${contexto}`
     );
+  }
+  if (conhecimento.contexto) {
+    blocos.push(conhecimento.contexto);
   }
   const systemPrompt = blocos.length ? blocos.join("\n\n") : undefined;
 
@@ -295,6 +314,7 @@ export const processarMensagemComIa = async (
           engine,
           confidence: confianca,
           memorias,
+          conhecimento: conhecimento.total,
           motivo: "escalonamento por baixa confiança"
         };
       }
@@ -327,12 +347,19 @@ export const processarMensagemComIa = async (
       respondeu: false,
       engine,
       motivo: `motor ${engine} indisponível`,
-      memorias
+      memorias,
+      conhecimento: conhecimento.total
     };
   }
 
   if (!resposta?.reply?.trim()) {
-    return { respondeu: false, engine, motivo: "resposta vazia", memorias };
+    return {
+      respondeu: false,
+      engine,
+      motivo: "resposta vazia",
+      memorias,
+      conhecimento: conhecimento.total
+    };
   }
 
   // ---- 5) memória (grava ida e volta) --------------------------------
@@ -350,7 +377,9 @@ export const processarMensagemComIa = async (
   logger.info(
     `[IA] respondeu com engine=${
       resposta.engine
-    } memorias=${memorias} confianca=${resposta.confidence ?? confianca ?? "-"}`
+    } memorias=${memorias} conhecimento=${conhecimento.total} confianca=${
+      resposta.confidence ?? confianca ?? "-"
+    }`
   );
 
   return {
@@ -358,7 +387,8 @@ export const processarMensagemComIa = async (
     reply: resposta.reply,
     engine: resposta.engine,
     confidence: resposta.confidence ?? confianca,
-    memorias
+    memorias,
+    conhecimento: conhecimento.total
   };
 };
 

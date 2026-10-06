@@ -33,6 +33,7 @@ import { toast } from "react-toastify";
 import { isArray, isEmpty } from "lodash";
 import moment from "moment";
 import TableAttendantsStatus from "../../components/Dashboard/TableAttendantsStatus";
+import VoiceAgentPanel from "../../components/VoiceAgentPanel";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import useDashboard from "../../hooks/useDashboard";
 import useContacts from "../../hooks/useContacts";
@@ -294,6 +295,7 @@ const Dashboard = () => {
             <Tab label={i18n.t("dashboard.tabs.performance")} />
             <Tab label={i18n.t("dashboard.tabs.assessments")} />
             <Tab label={i18n.t("dashboard.tabs.attendants")} />
+            <Tab label={i18n.t("dashboard.tabs.voiceAgent")} />
           </Tabs>
         </Paper>
 
@@ -514,6 +516,18 @@ const Dashboard = () => {
               </Typography>
               <ChatsUser />
             </Box>
+          </Paper>
+        )}
+        {/* Agente de voz */}
+        {activeTab === 3 && (
+          <Paper
+            sx={{
+              p: 3,
+              borderRadius: 2,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
+            }}
+          >
+            <VoiceAgentPanel aoConcluir={() => setFetchDataFilter((v) => !v)} />
           </Paper>
         )}
       </Container>

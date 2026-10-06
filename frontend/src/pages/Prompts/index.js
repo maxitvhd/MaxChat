@@ -6,11 +6,13 @@ import {
   Button,
   IconButton,
   Paper,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
+  Tabs
 } from "@material-ui/core";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -27,24 +29,25 @@ import { DeleteOutline, Edit } from "@material-ui/icons";
 import PromptModal from "../../components/PromptModal";
 import { toast } from "react-toastify";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import KnowledgePanel from "../../components/KnowledgePanel";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import usePlans from "../../hooks/usePlans";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import ForbiddenPage from "../../components/ForbiddenPage";
 // import { SocketContext } from "../../context/Socket/SocketContext";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   mainPaper: {
     flex: 1,
     padding: theme.spacing(1),
     overflowY: "scroll",
-    ...theme.scrollbarStyles,
+    ...theme.scrollbarStyles
   },
   customTableCell: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
-  },
+    justifyContent: "center"
+  }
 }));
 
 const reducer = (state, action) => {
@@ -52,8 +55,8 @@ const reducer = (state, action) => {
     const prompts = action.payload;
     const newPrompts = [];
 
-    prompts.forEach((prompt) => {
-      const promptIndex = state.findIndex((p) => p.id === prompt.id);
+    prompts.forEach(prompt => {
+      const promptIndex = state.findIndex(p => p.id === prompt.id);
       if (promptIndex !== -1) {
         state[promptIndex] = prompt;
       } else {
@@ -66,7 +69,7 @@ const reducer = (state, action) => {
 
   if (action.type === "UPDATE_PROMPTS") {
     const prompt = action.payload;
-    const promptIndex = state.findIndex((p) => p.id === prompt.id);
+    const promptIndex = state.findIndex(p => p.id === prompt.id);
 
     if (promptIndex !== -1) {
       state[promptIndex] = prompt;
@@ -78,7 +81,7 @@ const reducer = (state, action) => {
 
   if (action.type === "DELETE_PROMPT") {
     const promptId = action.payload;
-    const promptIndex = state.findIndex((p) => p.id === promptId);
+    const promptIndex = state.findIndex(p => p.id === promptId);
     if (promptIndex !== -1) {
       state.splice(promptIndex, 1);
     }
@@ -99,6 +102,8 @@ const Prompts = () => {
   const [promptModalOpen, setPromptModalOpen] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  // 0 = prompts do atendimento, 1 = base de conhecimento da empresa
+  const [abaAtiva, setAbaAtiva] = useState(0);
   //   const socketManager = useContext(SocketContext);
   const { user, socket } = useContext(AuthContext);
 
@@ -110,9 +115,11 @@ const Prompts = () => {
     async function fetchData() {
       const planConfigs = await getPlanCompany(undefined, companyId);
       if (!planConfigs.plan.useOpenAi) {
-        toast.error("Esta empresa não possui permissão para acessar essa página! Estamos lhe redirecionando.");
+        toast.error(
+          "Esta empresa não possui permissão para acessar essa página! Estamos lhe redirecionando."
+        );
         setTimeout(() => {
-          history.push(`/`)
+          history.push(`/`);
         }, 1000);
       }
     }
@@ -138,7 +145,7 @@ const Prompts = () => {
   useEffect(() => {
     // const socket = socketManager.GetSocket();
 
-    const onPromptEvent = (data) => {
+    const onPromptEvent = data => {
       if (data.action === "update" || data.action === "create") {
         dispatch({ type: "UPDATE_PROMPTS", payload: data.prompt });
       }
@@ -154,6 +161,10 @@ const Prompts = () => {
     };
   }, [socket]);
 
+  const handleTabChange = (event, novoValor) => {
+    setAbaAtiva(novoValor);
+  };
+
   const handleOpenPromptModal = () => {
     setPromptModalOpen(true);
     setSelectedPrompt(null);
@@ -164,7 +175,7 @@ const Prompts = () => {
     setSelectedPrompt(null);
   };
 
-  const handleEditPrompt = (prompt) => {
+  const handleEditPrompt = prompt => {
     setSelectedPrompt(prompt);
     setPromptModalOpen(true);
   };
@@ -174,7 +185,7 @@ const Prompts = () => {
     setSelectedPrompt(null);
   };
 
-  const handleDeletePrompt = async (promptId) => {
+  const handleDeletePrompt = async promptId => {
     try {
       const { data } = await api.delete(`/prompt/${promptId}`);
       toast.info(i18n.t(data.message));
@@ -189,7 +200,8 @@ const Prompts = () => {
       <ConfirmationModal
         title={
           selectedPrompt &&
-          `${i18n.t("prompts.confirmationModal.deleteTitle")} ${selectedPrompt.name
+          `${i18n.t("prompts.confirmationModal.deleteTitle")} ${
+            selectedPrompt.name
           }?`
         }
         open={confirmModalOpen}
@@ -203,73 +215,89 @@ const Prompts = () => {
         onClose={handleClosePromptModal}
         promptId={selectedPrompt?.id}
       />
-      {user.profile === "user" ?
+      {user.profile === "user" ? (
         <ForbiddenPage />
-        :
+      ) : (
         <>
           <MainHeader>
             <Title>{i18n.t("prompts.title")}</Title>
+            <Tabs
+              value={abaAtiva}
+              onChange={handleTabChange}
+              indicatorColor="primary"
+              textColor="primary"
+            >
+              <Tab label={i18n.t("knowledge.tabs.prompts")} />
+              <Tab label={i18n.t("knowledge.tabs.knowledge")} />
+            </Tabs>
             <MainHeaderButtonsWrapper>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleOpenPromptModal}
-              >
-                {i18n.t("prompts.buttons.add")}
-              </Button>
+              {abaAtiva === 0 && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleOpenPromptModal}
+                >
+                  {i18n.t("prompts.buttons.add")}
+                </Button>
+              )}
             </MainHeaderButtonsWrapper>
           </MainHeader>
-          <Paper className={classes.mainPaper} variant="outlined">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell align="left">
-                    {i18n.t("prompts.table.name")}
-                  </TableCell>
-                  <TableCell align="left">
-                    {i18n.t("prompts.table.queue")}
-                  </TableCell>
-                  <TableCell align="left">
-                    {i18n.t("prompts.table.max_tokens")}
-                  </TableCell>
-                  <TableCell align="center">
-                    {i18n.t("prompts.table.actions")}
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <>
-                  {prompts.map((prompt) => (
-                    <TableRow key={prompt.id}>
-                      <TableCell align="left">{prompt.name}</TableCell>
-                      <TableCell align="left">{prompt.queue.name}</TableCell>
-                      <TableCell align="left">{prompt.maxTokens}</TableCell>
-                      <TableCell align="center">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEditPrompt(prompt)}
-                        >
-                          <Edit />
-                        </IconButton>
+          {abaAtiva === 1 ? (
+            <KnowledgePanel embutido />
+          ) : (
+            <Paper className={classes.mainPaper} variant="outlined">
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell align="left">
+                      {i18n.t("prompts.table.name")}
+                    </TableCell>
+                    <TableCell align="left">
+                      {i18n.t("prompts.table.queue")}
+                    </TableCell>
+                    <TableCell align="left">
+                      {i18n.t("prompts.table.max_tokens")}
+                    </TableCell>
+                    <TableCell align="center">
+                      {i18n.t("prompts.table.actions")}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <>
+                    {prompts.map(prompt => (
+                      <TableRow key={prompt.id}>
+                        <TableCell align="left">{prompt.name}</TableCell>
+                        <TableCell align="left">{prompt.queue.name}</TableCell>
+                        <TableCell align="left">{prompt.maxTokens}</TableCell>
+                        <TableCell align="center">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleEditPrompt(prompt)}
+                          >
+                            <Edit />
+                          </IconButton>
 
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            setSelectedPrompt(prompt);
-                            setConfirmModalOpen(true);
-                          }}
-                        >
-                          <DeleteOutline />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {loading && <TableRowSkeleton columns={4} />}
-                </>
-              </TableBody>
-            </Table>
-          </Paper>
-        </>}
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setSelectedPrompt(prompt);
+                              setConfirmModalOpen(true);
+                            }}
+                          >
+                            <DeleteOutline />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {loading && <TableRowSkeleton columns={4} />}
+                  </>
+                </TableBody>
+              </Table>
+            </Paper>
+          )}
+        </>
+      )}
     </MainContainer>
   );
 };
