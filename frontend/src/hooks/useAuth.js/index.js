@@ -62,7 +62,14 @@ const useAuth = () => {
             api.defaults.headers.Authorization = `Bearer ${data.token}`;
             return api(originalRequest);
           } catch (refreshError) {
-            // O refresh em si falhou: so agora a sessao esta mesmo perdida.
+            // Se ja havia sessao em uso (token no armazenamento), nao derruba
+            // o usuario diante de uma falha transitoria do cookie/refresh: o
+            // proximo request volta a tentar renovar. So limpa quando nao ha
+            // nenhuma sessao para manter.
+            const hadToken = !!localStorage.getItem("token");
+            if (hadToken) {
+              return Promise.reject(refreshError);
+            }
             localStorage.removeItem("token");
             api.defaults.headers.Authorization = undefined;
             setIsAuth(false);
