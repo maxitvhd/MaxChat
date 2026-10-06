@@ -353,11 +353,9 @@ const LoggedInLayout = ({ children, themeToggle }) => {
 
       const onCompanyAuthLayout = (data) => {
         if (data.user.id === +userId) {
-          toastError("Sua conta foi acessada em outro computador.");
-          setTimeout(() => {
-            localStorage.clear();
-            window.location.reload();
-          }, 1000);
+          toastError(
+            "Sua conta foi acessada em outro dispositivo. Se não foi você, redefina sua senha."
+          );
         }
       }
 
