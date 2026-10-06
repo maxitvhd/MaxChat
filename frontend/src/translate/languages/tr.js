@@ -455,6 +455,14 @@ const messages = {
           max_tokens: "Maksimum Yanıt Tokenları",
           actions: "Eylemler",
         },
+        confirmationModal: {
+          deleteTitle: "Sil",
+          deleteMessage: "Emin misiniz? Bu işlem geri alınamaz!",
+        },
+        buttons: {
+          add: "Prompt Ekle",
+        },
+      },
       knowledge: {
         title: "Bilgi",
         promptsHint: "Promptlar, yapay zekânın sektör bazlı davranışını belirler. Bilgi tabanı ise cevap verirken baktığı içeriği tutar.",
@@ -528,14 +536,6 @@ const messages = {
           documentAdded: "Belge eklendi",
           documentDeleted: "Belge silindi",
           selectFile: "Bir dosya seç",
-        },
-      },
-        confirmationModal: {
-          deleteTitle: "Sil",
-          deleteMessage: "Emin misiniz? Bu işlem geri alınamaz!",
-        },
-        buttons: {
-          add: "Prompt Ekle",
         },
       },
       contactModal: {

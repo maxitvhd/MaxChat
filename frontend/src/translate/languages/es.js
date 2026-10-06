@@ -455,6 +455,14 @@ const messages = {
           max_tokens: "Máximo Tokens Respuesta",
           actions: "Acciones",
         },
+        confirmationModal: {
+          deleteTitle: "Eliminar",
+          deleteMessage: "¡Estás seguro? ¡Esta acción no se puede deshacer!",
+        },
+        buttons: {
+          add: "Agregar Prompt",
+        },
+      },
       knowledge: {
         title: "Conocimiento",
         promptsHint: "Los prompts definen cómo se comporta la IA por sector. La base de conocimiento guarda el contenido que consulta para responder.",
@@ -528,14 +536,6 @@ const messages = {
           documentAdded: "Documento agregado",
           documentDeleted: "Documento eliminado",
           selectFile: "Elige un archivo",
-        },
-      },
-        confirmationModal: {
-          deleteTitle: "Eliminar",
-          deleteMessage: "¡Estás seguro? ¡Esta acción no se puede deshacer!",
-        },
-        buttons: {
-          add: "Agregar Prompt",
         },
       },
       contactModal: {

@@ -464,6 +464,14 @@ const messages = {
           max_tokens: "Máximo Tokens Resposta",
           actions: "Ações",
         },
+        confirmationModal: {
+          deleteTitle: "Excluir",
+          deleteMessage: "Você tem certeza? Essa ação não pode ser revertida!",
+        },
+        buttons: {
+          add: "Adicionar Prompt",
+        },
+      },
       knowledge: {
         title: "Conhecimento",
         promptsHint: "Os prompts definem o comportamento da IA por setor. A base de conhecimento guarda o conteúdo que ela consulta para responder.",
@@ -537,14 +545,6 @@ const messages = {
           documentAdded: "Documento adicionado",
           documentDeleted: "Documento excluído",
           selectFile: "Escolha um arquivo",
-        },
-      },
-        confirmationModal: {
-          deleteTitle: "Excluir",
-          deleteMessage: "Você tem certeza? Essa ação não pode ser revertida!",
-        },
-        buttons: {
-          add: "Adicionar Prompt",
         },
       },
       contactModal: {

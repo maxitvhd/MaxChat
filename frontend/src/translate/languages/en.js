@@ -455,6 +455,14 @@ const messages = {
 			max_tokens: "Maximum Response Tokens",
 			actions: "Actions",
 		  },
+		  confirmationModal: {
+			deleteTitle: "Delete",
+			deleteMessage: "Are you sure? This action cannot be undone!",
+		  },
+		  buttons: {
+			add: "Add Prompt",
+		  },
+		},
 		knowledge: {
 		  title: "Knowledge",
 		  promptsHint: "Prompts set how the AI behaves per department. The knowledge base holds the content it looks up to answer.",
@@ -528,14 +536,6 @@ const messages = {
 			documentAdded: "Document added",
 			documentDeleted: "Document deleted",
 			selectFile: "Choose a file",
-		  },
-		},
-		  confirmationModal: {
-			deleteTitle: "Delete",
-			deleteMessage: "Are you sure? This action cannot be undone!",
-		  },
-		  buttons: {
-			add: "Add Prompt",
 		  },
 		},
 		contactModal: {
