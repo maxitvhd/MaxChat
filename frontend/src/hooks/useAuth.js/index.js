@@ -17,6 +17,18 @@ const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({});
   const [socket, setSocket] = useState({})
+
+  const decodeTokenExp = (token) => {
+    try {
+      const parts = String(token).split(".");
+      const payload = JSON.parse(
+        atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+      );
+      return payload.exp || 0;
+    } catch (_) {
+      return 0;
+    }
+  };
  
 
   useEffect(() => {
@@ -59,6 +71,7 @@ const useAuth = () => {
           try {
             const { data } = await api.post("/auth/refresh_token");
             localStorage.setItem("token", JSON.stringify(data.token));
+            localStorage.setItem("user", JSON.stringify(data.user));
             api.defaults.headers.Authorization = `Bearer ${data.token}`;
             return api(originalRequest);
           } catch (refreshError) {
@@ -93,11 +106,29 @@ const useAuth = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const storedToken = localStorage.getItem("token");
     (async () => {
-      if (token) {
+      if (storedToken) {
         try {
+          // Se o token ainda esta valido, o reload nao precisa de reflet
+          // com a rede nem do cookie: usa o usuario em cache e segue.
+          // Isso impede o app de "esquecer a sessao" ao recarregar.
+          let token = storedToken;
+          const parsed = JSON.parse(storedToken);
+          const exp = decodeTokenExp(parsed);
+          const cachedUser = localStorage.getItem("user");
+          if (exp > Math.floor(Date.now() / 1000) + 60 && cachedUser) {
+            token = parsed;
+            api.defaults.headers.Authorization = `Bearer ${token}`;
+            setUser(JSON.parse(cachedUser));
+            setIsAuth(true);
+            setLoading(false);
+            return;
+          }
+
           const { data } = await api.post("/auth/refresh_token");
+          localStorage.setItem("token", JSON.stringify(data.token));
+          localStorage.setItem("user", JSON.stringify(data.user));
           api.defaults.headers.Authorization = `Bearer ${data.token}`;
           setIsAuth(true);
           setUser(data.user);
@@ -105,6 +136,7 @@ const useAuth = () => {
           // Token expirado ou invalido: limpa para o app cair no login
           // em vez de tentar renderizar rotas privadas sem usuario.
           localStorage.removeItem("token");
+          localStorage.removeItem("user");
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
         }
@@ -186,6 +218,7 @@ const useAuth = () => {
 
       if (before === true) {
         localStorage.setItem("token", JSON.stringify(data.token));
+        localStorage.setItem("user", JSON.stringify(data.user));
         // localStorage.setItem("public-token", JSON.stringify(data.user.token));
         // localStorage.setItem("companyId", companyId);
         // localStorage.setItem("userId", id);
