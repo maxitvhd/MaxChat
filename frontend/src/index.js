@@ -15,4 +15,4 @@ ReactDOM.render(
 	}
 );
 
-serviceworker.register()
+serviceworker.unregister()
