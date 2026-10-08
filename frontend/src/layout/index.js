@@ -294,21 +294,19 @@ const LoggedInLayout = ({ children, themeToggle }) => {
   const settings = useSettings();
 
   useEffect(() => {
+    if (!user?.companyId) return;
     const getSetting = async () => {
-      const response = await settings.get("wtV");
-
-
-      if (response) {
-
-        setUserToken("disabled");
-
-      } else {
-        setUserToken("disabled");
-      }
+      try {
+        const response = await settings.get("wtV");
+        if (response) {
+          setUserToken("disabled");
+        } else {
+          setUserToken("disabled");
+        }
+      } catch (_) {}
     };
-
     getSetting();
-  });
+  }, [user?.companyId]);
 
   
 

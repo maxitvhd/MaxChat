@@ -64,6 +64,10 @@ const useWhatsApps = () => {
 
 
   useEffect(() => {
+    if (!user?.companyId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const fetchSession = async () => {
       try {
@@ -72,11 +76,10 @@ const useWhatsApps = () => {
         setLoading(false);
       } catch (_) {
         setLoading(false);
-        // toastError(err);
       }
     };
     fetchSession();
-  }, []);
+  }, [user?.companyId]);
 
   useEffect(() => {
     if (user.companyId && socket) {
