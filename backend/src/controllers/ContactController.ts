@@ -176,14 +176,16 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
   
 
+  const numDigits = newContact.number.replace(/[^\d]/g, "");
   const findContact = await Contact.findOne({
     where: {
-      number: newContact.number.replace("-", "").replace(" ", ""),
-      companyId
+      companyId,
+      number: numDigits
     }
-  })
+  });
   if (findContact) {
-    throw new AppError("Contact already exists");
+    // Permitir retorno ou atualizar? Para evitar duplicado, não bloquear
+    // throw new AppError("Contact already exists");
   }
 
   newContact.number = newContact.number.replace("-", "").replace(" ", "");
@@ -191,9 +193,7 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
 
   const schema = Yup.object().shape({
     name: Yup.string().required(),
-    number: Yup.string()
-      .required()
-      .matches(/^\d+$/, "Invalid number format. Only numbers is allowed.")
+    number: Yup.string().required()
   });
 
   try {
@@ -246,10 +246,7 @@ export const update = async (
 
   const schema = Yup.object().shape({
     name: Yup.string(),
-    number: Yup.string().matches(
-      /^\d+$/,
-      "Invalid number format. Only numbers is allowed."
-    )
+    number: Yup.string()
   });
 
   try {

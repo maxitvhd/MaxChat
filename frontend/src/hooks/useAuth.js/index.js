@@ -86,7 +86,7 @@ const useAuth = () => {
             localStorage.removeItem("token");
             api.defaults.headers.Authorization = undefined;
             setIsAuth(false);
-          setSocket(null);
+          if (socket && typeof socket.disconnect === "function") socket.disconnect(); setSocket(null);
             return Promise.reject(refreshError);
           }
         }
@@ -95,7 +95,7 @@ const useAuth = () => {
           localStorage.removeItem("token");
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
-          setSocket(null);
+          if (socket && typeof socket.disconnect === "function") socket.disconnect(); setSocket(null);
         }
         return Promise.reject(error);
       }
@@ -143,7 +143,7 @@ const useAuth = () => {
           localStorage.removeItem("user");
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
-          setSocket(null);
+          if (socket && typeof socket.disconnect === "function") socket.disconnect(); setSocket(null);
         }
       }
       setLoading(false);
@@ -265,15 +265,14 @@ Entre em contato com o Suporte para mais informações! `);
     try {
       // socket.disconnect();
       await api.delete("/auth/logout");
-      setIsAuth(false);
-          setSocket(null);
+      if (socket && typeof socket.disconnect === "function") socket.disconnect(); setSocket(null);
       setUser({});
-      localStorage.removeItem("token");
-      localStorage.removeItem("cshow");
-      // localStorage.removeItem("public-token");
-      api.defaults.headers.Authorization = undefined;
+      localStorage.clear();
+      api.defaults.headers.common["Authorization"] = undefined;
+      delete api.defaults.headers.Authorization;
+      setIsAuth(false);
       setLoading(false);
-      history.push("/login");
+      window.location.href = "/login";
     } catch (err) {
       toastError(err);
       setLoading(false);
