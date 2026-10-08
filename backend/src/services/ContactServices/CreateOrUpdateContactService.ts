@@ -1,6 +1,7 @@
 import { getIO } from "../../libs/socket";
 import CompaniesSettings from "../../models/CompaniesSettings";
 import Contact from "../../models/Contact";
+import { Op } from "sequelize";
 import ContactCustomField from "../../models/ContactCustomField";
 import ContactListItem from "../../models/ContactListItem";
 import fs from "fs";
@@ -134,10 +135,34 @@ const CreateOrUpdateContactService = async ({
       contactName = contactName || `${number}`;
     }
 
-    // Primeiro, tenta encontrar um contato existente apenas pelo número
+    // Primeiro, tenta encontrar um contato existente (pelo número ou pelo remoteJid)
     contact = await Contact.findOne({
-      where: { number, companyId }
+      where: {
+        companyId,
+        [Op.or]: [
+          { number },
+          ...(remoteJid ? [{ remoteJid }] : [])
+        ]
+      }
     });
+    // tenta variantes para evitar duplicados
+    if (!contact) {
+      const variants: any[] = [];
+      if (number) variants.push(number);
+      if (number.startsWith("55") && number.length === 13 && number[4] === "9") {
+        variants.push("55" + number.substring(5));
+      } else if (number.startsWith("55") && number.length === 12) {
+        variants.push("55" + "9" + number.substring(4));
+      }
+      if (remoteJid) variants.push(remoteJid.replace(/@.*/, ""));
+      variants.push(rawNumber.replace(/[^0-9]/g, ""));
+      contact = await Contact.findOne({
+        where: {
+          companyId,
+          number: { [Op.in]: Array.from(new Set(variants.filter(Boolean))) }
+        }
+      });
+    }
 
     let updateImage = (!contact || contact?.profilePicUrl !== profilePicUrl && profilePicUrl !== "") && wbot || false;
 

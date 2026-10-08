@@ -1,0 +1,298 @@
+import { useState, useEffect, useContext } from "react";
+import { useHistory } from "react-router-dom";
+import { has, isArray } from "lodash";
+
+import { toast } from "react-toastify";
+
+import { i18n } from "../../translate/i18n";
+import api from "../../services/api";
+import toastError from "../../errors/toastError";
+import { socketConnection } from "../../services/socket";
+// import { useDate } from "../../hooks/useDate";
+import moment from "moment";
+
+const useAuth = () => {
+  const history = useHistory();
+  const [isAuth, setIsAuth] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState({});
+  const [socket, setSocket] = useState(null)
+
+  const decodeTokenExp = (token) => {
+    try {
+      const parts = String(token).split(".");
+      const payload = JSON.parse(
+        atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+      );
+      return payload.exp || 0;
+    } catch (_) {
+      return 0;
+    }
+  };
+ 
+
+  useEffect(() => {
+    const requestInterceptor = api.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          config.headers["Authorization"] = `Bearer ${JSON.parse(token)}`;
+        }
+        return config;
+      },
+      (error) => {
+        Promise.reject(error);
+      }
+    );
+
+    const responseInterceptor = api.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      async (error) => {
+        const originalRequest = error.config;
+        const status = error?.response?.status;
+        const isRefreshCall = /\/auth\/refresh_token/.test(
+          originalRequest?.url || ""
+        );
+
+        // 401 e 403 sao as duas formas de sessao caducada: 403 quando o token
+        // JWT venceu e 401 quando o header nem chegou. Antes so o 403 renovava e
+        // o 401 caia direto no logout, ejetando o usuario no meio do uso.
+        // Agora os dois tentam renovar uma vez so.
+        if (
+          (status === 401 || status === 403) &&
+          originalRequest &&
+          !originalRequest._retry &&
+          !isRefreshCall
+        ) {
+          originalRequest._retry = true;
+
+          try {
+            const { data } = await api.post("/auth/refresh_token");
+            localStorage.setItem("token", JSON.stringify(data.token));
+            localStorage.setItem("user", JSON.stringify(data.user));
+            api.defaults.headers.Authorization = `Bearer ${data.token}`;
+            return api(originalRequest);
+          } catch (refreshError) {
+            // Se ja havia sessao em uso (token no armazenamento), nao derruba
+            // o usuario diante de uma falha transitoria do cookie/refresh: o
+            // proximo request volta a tentar renovar. So limpa quando nao ha
+            // nenhuma sessao para manter.
+            const hadToken = !!localStorage.getItem("token");
+            if (hadToken) {
+              return Promise.reject(refreshError);
+            }
+            localStorage.removeItem("token");
+            api.defaults.headers.Authorization = undefined;
+            setIsAuth(false);
+            return Promise.reject(refreshError);
+          }
+        }
+
+        if (status === 401 || isRefreshCall) {
+          localStorage.removeItem("token");
+          api.defaults.headers.Authorization = undefined;
+          setIsAuth(false);
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      api.interceptors.request.eject(requestInterceptor);
+      api.interceptors.response.eject(responseInterceptor);
+    };
+  }, []);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    (async () => {
+      if (storedToken) {
+        try {
+          // Se o token ainda esta valido, o reload nao precisa de reflet
+          // com a rede nem do cookie: usa o usuario em cache e segue.
+          // Isso impede o app de "esquecer a sessao" ao recarregar.
+          let token = storedToken;
+          const parsed = JSON.parse(storedToken);
+          const exp = decodeTokenExp(parsed);
+          const cachedUser = localStorage.getItem("user");
+          if (exp > Math.floor(Date.now() / 1000) + 60 && cachedUser) {
+            token = parsed;
+            api.defaults.headers.Authorization = `Bearer ${token}`;
+            setUser(JSON.parse(cachedUser));
+            setIsAuth(true);
+            setLoading(false);
+            return;
+          }
+
+          const { data } = await api.post("/auth/refresh_token");
+          localStorage.setItem("token", JSON.stringify(data.token));
+          localStorage.setItem("user", JSON.stringify(data.user));
+          api.defaults.headers.Authorization = `Bearer ${data.token}`;
+          setIsAuth(true);
+          setUser(data.user);
+        } catch (err) {
+          // Token expirado ou invalido: limpa para o app cair no login
+          // em vez de tentar renderizar rotas privadas sem usuario.
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          api.defaults.headers.Authorization = undefined;
+          setIsAuth(false);
+        }
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(user).length && user.id > 0) {
+      // 
+      let io;
+      if (!Object.keys(socket).length) {
+        io = socketConnection({ user });
+        setSocket(io)
+      } else {
+        io = socket
+      }
+      io.on(`company-${user.companyId}-user`, (data) => {
+        if (data.action === "update" && data.user.id === user.id) {
+          setUser(data.user);
+        }
+      });
+
+      return () => {
+        // 
+        io.off(`company-${user.companyId}-user`);
+        // io.disconnect();
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [user]);
+
+  const handleLogin = async (userData) => {
+    setLoading(true);
+
+    try {
+      const { data } = await api.post("/auth/login", userData);
+      const {
+        user: { company },
+      } = data;
+
+      if (has(company, "companieSettings") && isArray(company.companieSettings[0])) {
+        const setting = company.companieSettings[0].find(
+          (s) => s.key === "campaignsEnabled"
+        );
+        if (setting && setting.value === "true") {
+          localStorage.setItem("cshow", null); //regra pra exibir campanhas
+        }
+      }
+
+      if (has(company, "companieSettings") && isArray(company.companieSettings[0])) {
+        const setting = company.companieSettings[0].find(
+          (s) => s.key === "sendSignMessage"
+        );
+
+        const signEnable = setting.value === "enable";
+
+        if (setting && setting.value === "enabled") {
+          localStorage.setItem("sendSignMessage", signEnable); //regra pra exibir campanhas
+        }
+      }
+      localStorage.setItem("profileImage", data.user.profileImage); //regra pra exibir imagem contato
+
+      moment.locale('pt-br');
+      let dueDate;
+      if (data.user.company.id === 1) {
+        dueDate = '2999-12-31T00:00:00.000Z'
+      } else {
+        dueDate = data.user.company.dueDate;
+      }
+      const hoje = moment(moment()).format("DD/MM/yyyy");
+      const vencimento = moment(dueDate).format("DD/MM/yyyy");
+
+      var diff = moment(dueDate).diff(moment(moment()).format());
+
+      var before = moment(moment().format()).isBefore(dueDate);
+      var dias = moment.duration(diff).asDays();
+
+      if (before === true) {
+        localStorage.setItem("token", JSON.stringify(data.token));
+        localStorage.setItem("user", JSON.stringify(data.user));
+        // localStorage.setItem("public-token", JSON.stringify(data.user.token));
+        // localStorage.setItem("companyId", companyId);
+        // localStorage.setItem("userId", id);
+        localStorage.setItem("companyDueDate", vencimento);
+        api.defaults.headers.Authorization = `Bearer ${data.token}`;
+        setUser(data.user);
+        setIsAuth(true);
+        toast.success(i18n.t("auth.toasts.success"));
+        if (Math.round(dias) < 5) {
+          toast.warn(`Sua assinatura vence em ${Math.round(dias)} ${Math.round(dias) === 1 ? 'dia' : 'dias'} `);
+        }
+
+        // // Atraso para garantir que o cache foi limpo
+        // setTimeout(() => {
+        //   window.location.reload(true); // Recarregar a página
+        // }, 1000);
+
+        history.push("/tickets");
+        setLoading(false);
+      } else {
+        // localStorage.setItem("companyId", companyId);
+        api.defaults.headers.Authorization = `Bearer ${data.token}`;
+        setIsAuth(true);
+        toastError(`Opss! Sua assinatura venceu ${vencimento}.
+Entre em contato com o Suporte para mais informações! `);
+        history.push("/financeiro-aberto");
+        setLoading(false);
+      }
+
+    } catch (err) {
+      toastError(err);
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setLoading(true);
+
+    try {
+      // socket.disconnect();
+      await api.delete("/auth/logout");
+      setIsAuth(false);
+      setUser({});
+      localStorage.removeItem("token");
+      localStorage.removeItem("cshow");
+      // localStorage.removeItem("public-token");
+      api.defaults.headers.Authorization = undefined;
+      setLoading(false);
+      history.push("/login");
+    } catch (err) {
+      toastError(err);
+      setLoading(false);
+    }
+  };
+
+  const getCurrentUserInfo = async () => {
+    try {
+      const { data } = await api.get("/auth/me");
+      
+      return data;
+    } catch (_) {
+      return null;
+    }
+  };
+
+  return {
+    isAuth,
+    user,
+    loading,
+    handleLogin,
+    handleLogout,
+    getCurrentUserInfo,
+    socket
+  };
+};
+
+export default useAuth;
