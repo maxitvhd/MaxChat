@@ -2,20 +2,17 @@ import io from "socket.io-client";
 
 class SocketWorker {
   constructor(companyId , userId) {
-    if (!SocketWorker.instance) {
-      this.companyId = companyId
-      this.userId = userId
-      this.socket = null;
-      this.configureSocket();
-      this.eventListeners = {}; // Armazena os ouvintes de eventos registrados
-      SocketWorker.instance = this;
-
-    } 
-
-    return SocketWorker.instance;
+    this.companyId = companyId
+    this.userId = userId
+    this.socket = null;
+    this.configureSocket();
+    this.eventListeners = {}; // Armazena os ouvintes de eventos registrados
   }
 
   configureSocket() {
+    if (!this?.companyId || !this?.userId) {
+      return;
+    }
     this.socket = io(`${process.env.REACT_APP_BACKEND_URL}/${this?.companyId}` , {
       autoConnect: true,
       reconnection: true,
@@ -76,7 +73,6 @@ class SocketWorker {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null
-      this.instance = null
       
     }
   }
@@ -102,7 +98,6 @@ class SocketWorker {
   }
 }
 
-// const instance = (companyId, userId) => new SocketWorker(companyId,userId);
 const instance = (companyId, userId) => new SocketWorker(companyId, userId);
 
 export default instance;

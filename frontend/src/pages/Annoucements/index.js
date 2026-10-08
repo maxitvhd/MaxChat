@@ -152,9 +152,9 @@ const Announcements = () => {
         }
       }
 
-      socket.on(`company-announcement`, onCompanyAnnouncement);
+      socket && socket.on(`company-announcement`, onCompanyAnnouncement);
       return () => {
-        socket.off(`company-announcement`, onCompanyAnnouncement);
+        socket && socket.off(`company-announcement`, onCompanyAnnouncement);
       }
     }
   }, [user]);

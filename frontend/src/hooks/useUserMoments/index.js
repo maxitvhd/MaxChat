@@ -49,11 +49,11 @@ const useUserMoments = () => {
         }
       };
   
-      socket.on(`company-${companyId}-ticket`, onTicketEvent);
-      socket.on(`company-${companyId}-appMessage`, onAppMessage);
+      socket && socket.on(`company-${companyId}-ticket`, onTicketEvent);
+      socket && socket.on(`company-${companyId}-appMessage`, onAppMessage);
       return () => {
-        socket.off(`company-${companyId}-ticket`, onTicketEvent);
-        socket.off(`company-${companyId}-appMessage`, onAppMessage);
+        socket && socket.off(`company-${companyId}-ticket`, onTicketEvent);
+        socket && socket.off(`company-${companyId}-appMessage`, onAppMessage);
       };
     }
   }, [user.id, socket]); // Dependências especificadas aqui  

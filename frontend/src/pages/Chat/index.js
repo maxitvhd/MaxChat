@@ -264,17 +264,17 @@ function Chat(props) {
       }
     }
 
-    socket.on(`company-${companyId}-chat-user-${user.id}`, onChatUser);
-    socket.on(`company-${companyId}-chat`, onChat);
+    socket && socket.on(`company-${companyId}-chat-user-${user.id}`, onChatUser);
+    socket && socket.on(`company-${companyId}-chat`, onChat);
     if (isObject(currentChat) && has(currentChat, "id")) {
-      socket.on(`company-${companyId}-chat-${currentChat.id}`, onCurrentChat);
+      socket && socket.on(`company-${companyId}-chat-${currentChat.id}`, onCurrentChat);
     }
 
     return () => {
-      socket.off(`company-${companyId}-chat-user-${user.id}`, onChatUser);
-      socket.off(`company-${companyId}-chat`, onChat);
+      socket && socket.off(`company-${companyId}-chat-user-${user.id}`, onChatUser);
+      socket && socket.off(`company-${companyId}-chat`, onChat);
       if (isObject(currentChat) && has(currentChat, "id")) {
-        socket.off(`company-${companyId}-chat-${currentChat.id}`, onCurrentChat);
+        socket && socket.off(`company-${companyId}-chat-${currentChat.id}`, onCurrentChat);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

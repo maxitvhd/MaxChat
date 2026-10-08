@@ -557,15 +557,15 @@ const MessagesList = ({
         dispatch({ type: "DELETE_MESSAGE", payload: data.messageId });
       }
     }
-    socket.on("connect", connectEventMessagesList);
-    socket.on(`company-${companyId}-appMessage`, onAppMessageMessagesList);
+    socket && socket.on("connect", connectEventMessagesList);
+    socket && socket.on(`company-${companyId}-appMessage`, onAppMessageMessagesList);
 
     return () => {
 
       socket.emit("joinChatBoxLeave", `${ticketId}`)
 
-      socket.off("connect", connectEventMessagesList);
-      socket.off(`company-${companyId}-appMessage`, onAppMessageMessagesList);
+      socket && socket.off("connect", connectEventMessagesList);
+      socket && socket.off(`company-${companyId}-appMessage`, onAppMessageMessagesList);
     };
 
   }, [ticketId]);

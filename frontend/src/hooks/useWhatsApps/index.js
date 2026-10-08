@@ -79,10 +79,9 @@ const useWhatsApps = () => {
   }, []);
 
   useEffect(() => {
-    if (user.companyId) {
+    if (user.companyId && socket) {
 
       const companyId = user.companyId;
-//    const socket = socketManager.GetSocket();
 
       const onCompanyWhatsapp = (data) => {
         if (data.action === "update") {
@@ -99,15 +98,19 @@ const useWhatsApps = () => {
         }
       }
 
-      socket.on(`company-${companyId}-whatsapp`, onCompanyWhatsapp);
-      socket.on(`company-${companyId}-whatsappSession`, onCompanyWhatsappSession);
+      if (socket.on) {
+        socket.on(`company-${companyId}-whatsapp`, onCompanyWhatsapp);
+        socket.on(`company-${companyId}-whatsappSession`, onCompanyWhatsappSession);
+      }
 
       return () => {
-        socket.off(`company-${companyId}-whatsapp`, onCompanyWhatsapp);
-        socket.off(`company-${companyId}-whatsappSession`, onCompanyWhatsappSession);
+        if (socket.off) {
+          socket.off(`company-${companyId}-whatsapp`, onCompanyWhatsapp);
+          socket.off(`company-${companyId}-whatsappSession`, onCompanyWhatsappSession);
+        }
       };
     }
-  }, [socket]);
+  }, [socket, user]);
 
   return { whatsApps, loading };
 };

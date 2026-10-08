@@ -319,9 +319,9 @@ const MainListItems = ({ collapsed, drawerClose }) => {
         }
       };
 
-      socket.on(`company-${companyId}-chat`, onCompanyChatMainListItems);
+      socket && socket.on(`company-${companyId}-chat`, onCompanyChatMainListItems);
       return () => {
-        socket.off(`company-${companyId}-chat`, onCompanyChatMainListItems);
+        socket && socket.off(`company-${companyId}-chat`, onCompanyChatMainListItems);
       };
     }
   }, [socket]);

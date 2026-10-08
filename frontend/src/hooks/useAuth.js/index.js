@@ -16,7 +16,7 @@ const useAuth = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({});
-  const [socket, setSocket] = useState({})
+  const [socket, setSocket] = useState(null)
 
   const decodeTokenExp = (token) => {
     try {
@@ -86,6 +86,7 @@ const useAuth = () => {
             localStorage.removeItem("token");
             api.defaults.headers.Authorization = undefined;
             setIsAuth(false);
+          setSocket(null);
             return Promise.reject(refreshError);
           }
         }
@@ -94,6 +95,7 @@ const useAuth = () => {
           localStorage.removeItem("token");
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
+          setSocket(null);
         }
         return Promise.reject(error);
       }
@@ -123,6 +125,7 @@ const useAuth = () => {
             setUser(JSON.parse(cachedUser));
             setIsAuth(true);
             setLoading(false);
+            setSocket(socketConnection({ user: JSON.parse(cachedUser) }));
             return;
           }
 
@@ -132,6 +135,7 @@ const useAuth = () => {
           api.defaults.headers.Authorization = `Bearer ${data.token}`;
           setIsAuth(true);
           setUser(data.user);
+          setSocket(socketConnection({ user: data.user }));
         } catch (err) {
           // Token expirado ou invalido: limpa para o app cair no login
           // em vez de tentar renderizar rotas privadas sem usuario.
@@ -139,6 +143,7 @@ const useAuth = () => {
           localStorage.removeItem("user");
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
+          setSocket(null);
         }
       }
       setLoading(false);
@@ -149,13 +154,13 @@ const useAuth = () => {
     if (Object.keys(user).length && user.id > 0) {
       // 
       let io;
-      if (!Object.keys(socket).length) {
+      if (!socket) {
         io = socketConnection({ user });
         setSocket(io)
       } else {
         io = socket
       }
-      io.on(`company-${user.companyId}-user`, (data) => {
+      if (io && io.on) io.on(`company-${user.companyId}-user`, (data) => {
         if (data.action === "update" && data.user.id === user.id) {
           setUser(data.user);
         }
@@ -163,7 +168,7 @@ const useAuth = () => {
 
       return () => {
         // 
-        io.off(`company-${user.companyId}-user`);
+        if (io && io.off) io.off(`company-${user.companyId}-user`);
         // io.disconnect();
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -261,6 +266,7 @@ Entre em contato com o Suporte para mais informações! `);
       // socket.disconnect();
       await api.delete("/auth/logout");
       setIsAuth(false);
+          setSocket(null);
       setUser({});
       localStorage.removeItem("token");
       localStorage.removeItem("cshow");
