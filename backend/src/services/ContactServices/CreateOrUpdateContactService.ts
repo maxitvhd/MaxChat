@@ -145,22 +145,20 @@ const CreateOrUpdateContactService = async ({
         ]
       }
     });
-    // tenta variantes para evitar duplicados
     if (!contact) {
-      const variants: any[] = [];
-      if (number) variants.push(number);
-      if (number.startsWith("55") && number.length === 13 && number[4] === "9") {
-        variants.push("55" + number.substring(5));
-      } else if (number.startsWith("55") && number.length === 12) {
-        variants.push("55" + "9" + number.substring(4));
-      }
-      if (remoteJid) variants.push(remoteJid.replace(/@.*/, ""));
-      variants.push(rawNumber.replace(/[^0-9]/g, ""));
-      contact = await Contact.findOne({
-        where: {
-          companyId,
-          number: { [Op.in]: Array.from(new Set(variants.filter(Boolean))) }
+      const candidates: any[] = [];
+      if (remoteJid) {
+        candidates.push(remoteJid.replace(/@.*/, ""));
+        if (remoteJid.endsWith("@s.whatsapp.net")) {
+          let n = remoteJid.replace(/@s.whatsapp.net/, "");
+          if (n.startsWith("55") && n.length === 13 && n[4] === "9") candidates.push("55" + n.substring(5));
+          else if (n.startsWith("55") && n.length === 12) candidates.push("55" + "9" + n.substring(4));
         }
+      }
+      if (number) candidates.push(number);
+      if (rawNumber) candidates.push(rawNumber.replace(/[^0-9]/g, ""));
+      contact = await Contact.findOne({
+        where: { companyId, number: { [Op.in]: Array.from(new Set(candidates.filter(Boolean))) } }
       });
     }
 
