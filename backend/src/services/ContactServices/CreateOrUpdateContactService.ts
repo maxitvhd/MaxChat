@@ -148,17 +148,24 @@ const CreateOrUpdateContactService = async ({
     if (!contact) {
       const candidates: any[] = [];
       if (remoteJid) {
+        candidates.push(remoteJid);
         candidates.push(remoteJid.replace(/@.*/, ""));
-        if (remoteJid.endsWith("@s.whatsapp.net")) {
-          let n = remoteJid.replace(/@s.whatsapp.net/, "");
-          if (n.startsWith("55") && n.length === 13 && n[4] === "9") candidates.push("55" + n.substring(5));
-          else if (n.startsWith("55") && n.length === 12) candidates.push("55" + "9" + n.substring(4));
-        }
       }
       if (number) candidates.push(number);
-      if (rawNumber) candidates.push(rawNumber.replace(/[^0-9]/g, ""));
+      if (rawNumber) {
+        const rn = rawNumber.replace(/[^0-9]/g, "");
+        candidates.push(rn);
+        if (rn.startsWith("55") && rn.length === 13 && rn[4] === "9") candidates.push("55" + rn.substring(5));
+        else if (rn.startsWith("55") && rn.length === 12) candidates.push("55" + "9" + rn.substring(4));
+      }
       contact = await Contact.findOne({
-        where: { companyId, number: { [Op.in]: Array.from(new Set(candidates.filter(Boolean))) } }
+        where: {
+          companyId,
+          [Op.or]: [
+            { number: { [Op.in]: Array.from(new Set(candidates.filter(Boolean))) } },
+            { remoteJid: { [Op.in]: Array.from(new Set(candidates.filter(Boolean))) } }
+          ]
+        }
       });
     }
 
