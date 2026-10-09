@@ -4269,12 +4269,17 @@ const handleMessage = async (
       return;
     }
 
-    const ticketTraking = await FindOrCreateATicketTrakingService({
-      ticketId: ticket.id,
-      companyId,
-      ...(userId ? { userId } : {}),
-      whatsappId: whatsapp?.id
-    });
+    let ticketTraking: any = null;
+    try {
+      ticketTraking = await FindOrCreateATicketTrakingService({
+        ticketId: ticket.id,
+        companyId,
+        ...(userId ? { userId } : {}),
+        whatsappId: whatsapp?.id
+      });
+    } catch (e) {
+      logger.error(`Error creating ticket tracking: ${e}`);
+    }
 
     let useLGPD = false;
 
