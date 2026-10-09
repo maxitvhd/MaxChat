@@ -31,7 +31,7 @@ const FindOrCreateATicketTrakingService = async ({
     ticketId: Number(ticketId),
     companyId: Number(companyId),
     ...(whatsappId !== undefined ? { whatsappId: Number(whatsappId) } : {}),
-    ...(userId !== undefined ? { userId: Number(userId) } : {})
+    ...(userId && Number(userId) > 0 ? { userId: Number(userId) } : {})
   });
 
   return newRecord;
