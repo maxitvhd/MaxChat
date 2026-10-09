@@ -1649,7 +1649,7 @@ const verifyQueue = async (
         status: "pending"
       });
 
-    await ticket.reload();
+    try { await ticket.reload(); } catch (_) {}
   }
 
   if (String(selectedOption).toLocaleLowerCase() == "sair") {
@@ -5091,7 +5091,7 @@ const handleMessage = async (
             );
           }
 
-          await ticket.reload();
+          try { await ticket.reload(); } catch (_) {}
           return;
         }
       } catch (e) {
@@ -5117,7 +5117,7 @@ const handleMessage = async (
       });
     }
 
-    await ticket.reload();
+    try { await ticket.reload(); } catch (_) {}
   } catch (err) {
     Sentry.captureException(err);
     
