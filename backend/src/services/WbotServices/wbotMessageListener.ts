@@ -4272,7 +4272,7 @@ const handleMessage = async (
     const ticketTraking = await FindOrCreateATicketTrakingService({
       ticketId: ticket.id,
       companyId,
-      userId,
+      ...(userId ? { userId } : {}),
       whatsappId: whatsapp?.id
     });
 
