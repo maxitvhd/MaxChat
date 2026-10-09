@@ -21,6 +21,7 @@ import logger from "../../utils/logger";
 import ShowAiProviderSettingsService from "../AiProviderSettingsServices/ShowAiProviderSettingsService";
 import { executarResposta, resolverMotor } from "./ReplyEngineService";
 import { AiSettingsLike } from "./types";
+import { executarJev } from "./JevService";
 import Queue from "../../models/Queue";
 import CreateLogTicketService from "../TicketServices/CreateLogTicketService";
 
@@ -110,6 +111,46 @@ export interface ResultadoRota {
  * Só aceita um nome que exista de verdade na lista: a IA pode inventar, e
  * nesse caso o ticket fica na Triagem.
  */
+
+const adivinharFilaPorJev = async (
+  mensagem: string,
+  lista: Queue[],
+  companyId: number
+): Promise<Queue | null> => {
+  try {
+    const registro = await ShowAiProviderSettingsService({ companyId });
+    const settings = registro.toJSON() as unknown as AiSettingsLike;
+
+    const resultado = await executarJev({
+      settings,
+      message: mensagem,
+      historico: []
+    });
+
+    const escolha = (resultado as any)?.choice || (resultado as any)?.escolha;
+    const confianca = Number((resultado as any)?.confidence ?? (resultado as any)?.confianca ?? 0);
+
+    if (!escolha) return null;
+    const alvo = normalizarNome(escolha);
+    const nomes = lista.map((fila) => ({ fila, nome: normalizarNome(fila.name) }));
+    const exata = nomes.find((n) => n.nome === alvo);
+    const encontrada =
+      exata?.fila ||
+      nomes.filter((n) => pareceNomeDeFila(alvo, n.nome))
+        .sort((a, b) => distanciaEdicao(alvo, a.nome) - distanciaEdicao(alvo, b.nome))[0]
+        ?.fila ||
+      null;
+
+    if (encontrada && confianca >= 0.7) {
+      return encontrada;
+    }
+    return encontrada && confianca >= 0.6 ? encontrada : null;
+  } catch (e) {
+    logger.warn(`[ROTA] JEV falhou ao identificar fila: ${(e as Error).message}`);
+    return null;
+  }
+};
+
 const adivinharFilaPorIa = async (
   mensagem: string,
   lista: Queue[],
@@ -263,9 +304,12 @@ export const extrairRota = async (
     // edição não recupera casos desse tipo, então a IA escolhe entre as
     // filas reais da empresa. Ela é muito melhor em reconhecer nome
     // ditado do que comparação de string.
-    const adivinhada = mensagemDoCliente
-      ? await adivinharFilaPorIa(mensagemDoCliente, lista, companyId)
+    let adivinhada = mensagemDoCliente
+      ? await adivinharFilaPorJev(mensagemDoCliente, lista, companyId)
       : null;
+    if (!adivinhada && mensagemDoCliente) {
+      adivinhada = await adivinharFilaPorIa(mensagemDoCliente, lista, companyId);
+    }
 
     if (adivinhada) {
       logger.info(
