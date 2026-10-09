@@ -27,6 +27,7 @@ import {
   generateWAMessageFromContent
 } from "@whiskeysockets/baileys";
 import Contact from "../../models/Contact";
+import ContactCustomField from "../../models/ContactCustomField";
 import Ticket from "../../models/Ticket";
 import Message from "../../models/Message";
 import { Mutex } from "async-mutex";
@@ -127,6 +128,8 @@ interface ImessageUpsert {
 interface IMe {
   name: string;
   id: string;
+  // LID do contato (xxx@lid) quando a mensagem chegou por esse formato
+  lid?: string;
 }
 
 interface SessionOpenAi extends OpenAI {
@@ -503,8 +506,15 @@ const getSenderMessage = (
   const me = getMeSocket(wbot);
   if (msg.key.fromMe) return me.id;
 
-  const senderId =
+  const key = msg.key as any;
+  let senderId =
     msg.participant || msg.key.participant || msg.key.remoteJid || undefined;
+
+  // Em grupo o participante pode vir como @lid; se o WhatsApp mandou o
+  // telefone junto (participantPn), uso ele pra não duplicar o contato
+  if (senderId?.endsWith("@lid") && key.participantPn) {
+    senderId = key.participantPn;
+  }
 
   return senderId && jidNormalizedUser(senderId);
 };
@@ -517,10 +527,56 @@ const getContactMessage = async (msg: proto.IWebMessageInfo, wbot: Session) => {
         id: getSenderMessage(msg, wbot),
         name: msg.pushName
       }
-    : {
-        id: msg.key.remoteJid,
-        name: msg.key.fromMe ? rawNumber : msg.pushName
-      };
+    : resolveLidContact(msg, rawNumber);
+};
+
+// O WhatsApp passou a mandar muitas conversas como xxx@lid em vez do
+// telefone. Quando vem o senderPn (telefone real) eu uso ele como
+// identidade, senão o sistema cria um contato novo com o número do LID
+// e abre uma segunda conversa pra mesma pessoa.
+const resolveLidContact = (
+  msg: proto.IWebMessageInfo,
+  rawNumber: string
+): IMe => {
+  const remoteJid = msg.key.remoteJid;
+  const name = msg.key.fromMe ? rawNumber : msg.pushName;
+
+  if (!remoteJid.endsWith("@lid")) {
+    return { id: remoteJid, name };
+  }
+
+  const senderPn = (msg.key as any).senderPn as string | undefined;
+  const pnJid = senderPn ? jidNormalizedUser(senderPn) : undefined;
+
+  return {
+    id: pnJid || remoteJid,
+    name: msg.key.fromMe ? (pnJid || remoteJid).replace(/\D/g, "") : name,
+    lid: remoteJid
+  };
+};
+
+const LID_FIELD = "whatsapp_lid";
+
+// Procura o contato que já tem esse LID guardado nos campos extras
+const findContactByLid = async (
+  lid: string,
+  companyId: number
+): Promise<Contact | null> => {
+  const field = await ContactCustomField.findOne({
+    where: { name: LID_FIELD, value: lid },
+    include: [{ model: Contact, where: { companyId }, required: true }]
+  });
+  return field?.contact || null;
+};
+
+// Guarda o LID no contato pra reconhecer depois mensagens que chegam só
+// com o LID (ex.: enviadas pelo próprio celular, sem senderPn)
+const saveContactLid = async (contact: Contact, lid: string) => {
+  const [field] = await ContactCustomField.findOrCreate({
+    where: { contactId: contact.id, name: LID_FIELD },
+    defaults: { contactId: contact.id, name: LID_FIELD, value: lid } as any
+  });
+  if (field.value !== lid) await field.update({ value: lid });
 };
 
 function findCaption(obj) {
@@ -824,7 +880,37 @@ const verifyContact = async (
     contactData.number = msgContact.id.replace("@g.us", "");
   }
 
+  const lid = msgContact.lid;
+  const hasPn = lid && !msgContact.id.endsWith("@lid");
+
+  // Só tenho o LID: se já conheço esse LID, devolvo o contato certo
+  if (lid && !hasPn) {
+    const known = await findContactByLid(lid, companyId);
+    if (known) return known;
+  }
+
+  // Tenho o telefone: se existir um contato antigo criado com o número do
+  // LID e nenhum com o telefone, converto ele pro telefone (sem apagar nada)
+  if (hasPn) {
+    const pnNumber = contactData.number;
+    const byPn = await Contact.findOne({ where: { companyId, number: pnNumber } });
+    if (!byPn) {
+      const byLid = await Contact.findOne({ where: { companyId, remoteJid: lid } });
+      if (byLid) {
+        await byLid.update({ number: pnNumber, remoteJid: msgContact.id });
+      }
+    }
+  }
+
   const contact = await CreateOrUpdateContactService(contactData);
+
+  if (hasPn) {
+    try {
+      await saveContactLid(contact, lid);
+    } catch (e) {
+      logger.warn(`[LID] falha ao salvar lid do contato ${contact.id}: ${(e as Error).message}`);
+    }
+  }
 
   return contact;
 };
