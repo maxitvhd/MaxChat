@@ -100,6 +100,7 @@ import {
   ehMensagemDeAudio,
   transcreverAudioDoWhatsApp
 } from "../AiServices/SttFromWhatsAppService";
+import { enviarRespostaEmAudio } from "../AiServices/TtsToWhatsAppService";
 import { WebhookModel } from "../../models/Webhook";
 import { add, differenceInMilliseconds } from "date-fns";
 import { FlowCampaignModel } from "../../models/FlowCampaign";
@@ -4997,7 +4998,10 @@ const handleMessage = async (
     // Módulo de IA por empresa.
     // Substitui apenas o passo do bot: se a IA responder, envia e não chama
     // o sayChatbot legado. Qualquer falha da IA cai no fluxo normal abaixo.
-    if (!msg.key.fromMe && ehMensagemDeAudio(msg)) {
+    // Se o cliente falou por áudio, a IA responde em texto e também em voz
+    const clienteMandouAudio = !msg.key.fromMe && ehMensagemDeAudio(msg);
+
+    if (clienteMandouAudio) {
       // O getBodyMessage devolve a string "Áudio" para áudio. Sem transcrever,
       // a IA tratava essa palavra como se fosse a mensagem do cliente e
       // respondia no escuro. Aqui o áudio vira texto de verdade; se não
@@ -5158,6 +5162,16 @@ const handleMessage = async (
               );
               await new Promise((r) => setTimeout(r, 2000));
             }
+          }
+
+          if (enviada && clienteMandouAudio) {
+            await enviarRespostaEmAudio({
+              wbot: wbot as WASocket,
+              jid,
+              texto: rota.texto,
+              companyId,
+              ticketId: ticket.id
+            });
           }
 
           if (enviada) {
