@@ -1594,7 +1594,7 @@ const verifyQueue = async (
         } else {
           
           await wbot.sendMessage(
-            `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+            msg.key.remoteJid || `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
             {
               text: body
             }
@@ -1603,7 +1603,7 @@ const verifyQueue = async (
       } else {
         
         await wbot.sendMessage(
-          `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+          msg.key.remoteJid || `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
           {
             text: body
           }
@@ -1702,7 +1702,7 @@ const verifyQueue = async (
       const debouncedSentMessagePosicao = debounce(
         async () => {
           await wbot.sendMessage(
-            `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+            msg.key.remoteJid || `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
             {
               text: bodyFila
             }
@@ -4710,7 +4710,12 @@ const handleMessage = async (
 
 
     //openai na conexao
+    // Desligado: o prompt da conexão agora é atendido pelo módulo de IA da
+    // empresa (mais abaixo, usa whatsapp.promptId). Esse caminho antigo
+    // chamava a OpenAI direto e, sem chave, o erro 401 derrubava o
+    // processamento antes do ticket entrar na fila Triagem.
     if (
+      false &&
       !ticket.queue &&
       !isGroup &&
       !msg.key.fromMe &&
