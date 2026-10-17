@@ -938,7 +938,9 @@ async function handleDispatchCampaign(job) {
       ticket = await ShowTicketService(ticket.id, campaign.companyId);
 
       if (whatsapp.status === "CONNECTED") {
-        if (campaign.confirmation && campaignShipping.confirmation === null) {
+        // Só pede confirmação se existe texto de confirmação; sem ele o envio
+        // travava aqui e o cliente recebia só "null" (a mensagem principal nunca saía)
+        if (campaign.confirmation && campaignShipping.confirmation === null && campaignShipping.confirmationMessage) {
           const confirmationMessage = await wbot.sendMessage(chatId, {
             text: `\u200c ${campaignShipping.confirmationMessage}`
           });
@@ -996,7 +998,9 @@ async function handleDispatchCampaign(job) {
     else {
 
 
-      if (campaign.confirmation && campaignShipping.confirmation === null) {
+      // Só pede confirmação se existe texto de confirmação; sem ele o envio
+        // travava aqui e o cliente recebia só "null" (a mensagem principal nunca saía)
+        if (campaign.confirmation && campaignShipping.confirmation === null && campaignShipping.confirmationMessage) {
         await wbot.sendMessage(chatId, {
           text: campaignShipping.confirmationMessage
         });
