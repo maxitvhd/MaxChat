@@ -259,8 +259,9 @@ const CampaignModal = ({
     const scheduledAt = moment(campaign.scheduledAt);
     const moreThenAnHour =
       !Number.isNaN(scheduledAt.diff(now)) && scheduledAt.diff(now, "hour") > 1;
+    // Finalizada e cancelada também podem ser editadas (viram rascunho ao salvar)
     const isEditable =
-      campaign.status === "INATIVA" ||
+      ["INATIVA", "FINALIZADA", "CANCELADA"].includes(campaign.status) ||
       (campaign.status === "PROGRAMADA" && moreThenAnHour);
 
     setCampaignEditable(isEditable);

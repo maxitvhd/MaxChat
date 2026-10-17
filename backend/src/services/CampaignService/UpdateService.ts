@@ -44,6 +44,12 @@ const UpdateService = async (data: Data): Promise<Campaign> => {
     throw new AppError("ERR_NO_CAMPAIGN_FOUND", 404);
   }
 
+  // Campanha já finalizada volta a ser rascunho: o texto pode ser ajustado
+  // e, se tiver data nova, ela vira PROGRAMADA logo abaixo
+  if (record.status === "FINALIZADA") {
+    data.status = "INATIVA";
+  }
+
   if (["INATIVA", "PROGRAMADA", "CANCELADA"].indexOf(data.status) === -1) {
     throw new AppError(
       "Só é permitido alterar campanha Inativa e Programada",
@@ -51,10 +57,13 @@ const UpdateService = async (data: Data): Promise<Campaign> => {
     );
   }
 
+  // Só vira PROGRAMADA com data futura; uma data que já passou deixa de ser
+  // agendamento (o agendador nunca pegaria essa campanha)
   if (
     data.scheduledAt != null &&
     data.scheduledAt != "" &&
-    data.status === "INATIVA"
+    data.status === "INATIVA" &&
+    new Date(data.scheduledAt) > new Date()
   ) {
     data.status = "PROGRAMADA";
   }
