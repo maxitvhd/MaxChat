@@ -292,7 +292,8 @@ const CampaignModal = ({
 
       Object.entries(values).forEach(([key, value]) => {
         if (key === "scheduledAt" && value !== "" && value !== null) {
-          dataValues[key] = moment(value).format("YYYY-MM-DD HH:mm:ss");
+          // Envia em UTC (ISO): sem o fuso o banco lia o horário de Brasília como UTC e a campanha ficava 3h no passado
+          dataValues[key] = moment(value).toISOString();
         } else {
           dataValues[key] = value === "" ? null : value;
         }
