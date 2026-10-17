@@ -7,7 +7,16 @@ import { toast } from "react-toastify";
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import Title from "../../components/Title";
-import { Grid, LinearProgress, Typography } from "@material-ui/core";
+import {
+  Grid,
+  LinearProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography
+} from "@material-ui/core";
 import api from "../../services/api";
 import { has, get, isNull } from "lodash";
 import CardCounter from "../../components/Dashboard/CardCounter";
@@ -150,6 +159,25 @@ const CampaignReport = () => {
     setLoading(false);
   };
 
+  // Uma linha por contato da campanha, com a situação do envio
+  const contatosDaLista = get(campaign, "contactList.contacts", []);
+  const envios = get(campaign, "shipping", []).map((envio) => {
+    const contato = contatosDaLista.find((c) => c.id === envio.contactId) || {};
+    const texto = (envio.message || "").replace(/\u200c/g, "").trim();
+    let situacao = "Pendente";
+    if (!isNull(envio.deliveredAt)) situacao = "Enviado";
+    else if (campaign.status === "FINALIZADA") situacao = "Não enviado";
+    return {
+      id: envio.id,
+      nome: contato.name || "—",
+      numero: contato.number || "—",
+      situacao,
+      enviadoEm: envio.deliveredAt,
+      confirmacaoSolicitada: envio.confirmationRequestedAt,
+      mensagem: texto.length > 120 ? `${texto.slice(0, 120)}...` : texto
+    };
+  });
+
   const formatStatus = (val) => {
     switch (val) {
       case "INATIVA":
@@ -259,6 +287,44 @@ const CampaignReport = () => {
               value={datetimeToClient(campaign.completedAt)}
               loading={loading}
             />
+          </Grid>
+          <Grid xs={12} item>
+            <Typography variant="h6" component="h3" style={{ marginTop: 24 }}>
+              Histórico de envios ({envios.length})
+            </Typography>
+            <Typography variant="caption" color="textSecondary">
+              Erros de envio não ficam gravados no sistema. Quando um contato aparece como "Não enviado", consulte o log do servidor.
+            </Typography>
+            <Table size="small" style={{ marginTop: 8 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Contato</TableCell>
+                  <TableCell>Número</TableCell>
+                  <TableCell>Situação</TableCell>
+                  <TableCell>Enviado em</TableCell>
+                  <TableCell>Confirmação solicitada</TableCell>
+                  <TableCell>Mensagem</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {envios.map((envio) => (
+                  <TableRow key={envio.id}>
+                    <TableCell>{envio.nome}</TableCell>
+                    <TableCell>{envio.numero}</TableCell>
+                    <TableCell>{envio.situacao}</TableCell>
+                    <TableCell>
+                      {envio.enviadoEm ? datetimeToClient(envio.enviadoEm) : "—"}
+                    </TableCell>
+                    <TableCell>
+                      {envio.confirmacaoSolicitada
+                        ? datetimeToClient(envio.confirmacaoSolicitada)
+                        : "—"}
+                    </TableCell>
+                    <TableCell>{envio.mensagem}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </Grid>
         </Grid>
       </Paper>

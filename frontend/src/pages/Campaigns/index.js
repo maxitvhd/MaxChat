@@ -20,6 +20,7 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
+import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
 import DescriptionIcon from "@material-ui/icons/Description";
 import PlayCircleOutlineIcon from "@material-ui/icons/PlayCircleOutline";
 import PauseCircleOutlineIcon from "@material-ui/icons/PauseCircleOutline";
@@ -196,6 +197,42 @@ const Campaigns = () => {
   const handleEditCampaign = (campaign) => {
     setSelectedCampaign(campaign);
     setCampaignModalOpen(true);
+  };
+
+  // Duplicar cria uma campanha nova em rascunho, com os mesmos textos, lista,
+  // fila e conexão. Os registros de envio não são copiados, então cada
+  // rodada fica com o próprio histórico.
+  const handleDuplicateCampaign = async (campaign) => {
+    try {
+      const { data } = await api.get(`/campaigns/${campaign.id}`);
+      await api.post("/campaigns", {
+        name: `${data.name} (cópia)`,
+        status: "INATIVA",
+        confirmation: data.confirmation,
+        scheduledAt: null,
+        contactListId: data.contactListId,
+        whatsappId: data.whatsappId,
+        queueId: data.queueId || null,
+        userId: data.userId || null,
+        statusTicket: data.statusTicket,
+        openTicket: data.openTicket,
+        message1: data.message1,
+        message2: data.message2,
+        message3: data.message3,
+        message4: data.message4,
+        message5: data.message5,
+        confirmationMessage1: data.confirmationMessage1,
+        confirmationMessage2: data.confirmationMessage2,
+        confirmationMessage3: data.confirmationMessage3,
+        confirmationMessage4: data.confirmationMessage4,
+        confirmationMessage5: data.confirmationMessage5
+      });
+      toast.success("Campanha duplicada. Ela está em rascunho para você revisar e agendar.");
+      setSearchParam("");
+      setPageNumber(1);
+    } catch (err) {
+      toastError(err);
+    }
   };
 
   const handleDeleteCampaign = async (campaignId) => {
@@ -419,6 +456,13 @@ const Campaigns = () => {
                             size="small"
                           >
                             <DescriptionIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            title="Duplicar campanha"
+                            onClick={() => handleDuplicateCampaign(campaign)}
+                          >
+                            <FileCopyOutlinedIcon />
                           </IconButton>
                           <IconButton
                             size="small"
