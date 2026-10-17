@@ -135,10 +135,10 @@ const CampaignReport = () => {
         }
       }
     };
-    socket.on(`company-${companyId}-campaign`, onCampaignEvent);
+    socket && socket.on(`company-${companyId}-campaign`, onCampaignEvent);
 
     return () => {
-      socket.off(`company-${companyId}-campaign`, onCampaignEvent);
+      socket && socket.off(`company-${companyId}-campaign`, onCampaignEvent);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId]);

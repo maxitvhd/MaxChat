@@ -177,9 +177,9 @@ const QueueIntegration = () => {
       }
     };
 
-    socket.on(`company-${companyId}-queueIntegration`, onQueueEvent);
+    socket && socket.on(`company-${companyId}-queueIntegration`, onQueueEvent);
     return () => {
-      socket.off(`company-${companyId}-queueIntegration`, onQueueEvent);
+      socket && socket.off(`company-${companyId}-queueIntegration`, onQueueEvent);
     };
   }, []);
 

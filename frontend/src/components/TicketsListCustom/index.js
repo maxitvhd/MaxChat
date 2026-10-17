@@ -359,10 +359,10 @@ const TicketsListCustom = (props) => {
             }
         }
 
-        socket.on("connect", onConnectTicketsList)
-        socket.on(`company-${companyId}-ticket`, onCompanyTicketTicketsList);
-        socket.on(`company-${companyId}-appMessage`, onCompanyAppMessageTicketsList);
-        socket.on(`company-${companyId}-contact`, onCompanyContactTicketsList);
+        socket && socket.on("connect", onConnectTicketsList)
+        socket && socket.on(`company-${companyId}-ticket`, onCompanyTicketTicketsList);
+        socket && socket.on(`company-${companyId}-appMessage`, onCompanyAppMessageTicketsList);
+        socket && socket.on(`company-${companyId}-contact`, onCompanyContactTicketsList);
 
         return () => {
             if (status) {
@@ -370,10 +370,10 @@ const TicketsListCustom = (props) => {
             } else {
                 socket.emit("leaveNotification");
             }
-            socket.off("connect", onConnectTicketsList);
-            socket.off(`company-${companyId}-ticket`, onCompanyTicketTicketsList);
-            socket.off(`company-${companyId}-appMessage`, onCompanyAppMessageTicketsList);
-            socket.off(`company-${companyId}-contact`, onCompanyContactTicketsList);
+            socket && socket.off("connect", onConnectTicketsList);
+            socket && socket.off(`company-${companyId}-ticket`, onCompanyTicketTicketsList);
+            socket && socket.off(`company-${companyId}-appMessage`, onCompanyAppMessageTicketsList);
+            socket && socket.off(`company-${companyId}-contact`, onCompanyContactTicketsList);
         };
 
     }, [status, showAll, user, selectedQueueIds, tags, users, profile, queues, sortTickets, showTicketWithoutQueue]);

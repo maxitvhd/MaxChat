@@ -138,10 +138,10 @@ const Quickemessages = () => {
         dispatch({ type: "DELETE_QUICKMESSAGE", payload: +data.id });
       }
     };
-    socket.on(`company-${companyId}-quickemessage`, onQuickMessageEvent);
+    socket && socket.on(`company-${companyId}-quickemessage`, onQuickMessageEvent);
 
     return () => {
-      socket.off(`company-${companyId}-quickemessage`, onQuickMessageEvent);
+      socket && socket.off(`company-${companyId}-quickemessage`, onQuickMessageEvent);
     };
   }, [socket]);
 

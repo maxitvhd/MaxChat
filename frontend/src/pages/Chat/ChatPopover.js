@@ -156,10 +156,10 @@ export default function ChatPopover() {
         }
       }
 
-      socket.on(`company-${companyId}-chat`, onCompanyChatPopover);
+      socket && socket.on(`company-${companyId}-chat`, onCompanyChatPopover);
 
       return () => {
-        socket.off(`company-${companyId}-chat`, onCompanyChatPopover);
+        socket && socket.off(`company-${companyId}-chat`, onCompanyChatPopover);
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

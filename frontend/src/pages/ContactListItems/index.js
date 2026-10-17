@@ -173,10 +173,10 @@ const ContactListItems = () => {
         dispatch({ type: "LOAD_CONTACTS", payload: data.records });
       }
     }
-    socket.on(`company-${companyId}-ContactListItem`, onCompanyContactLists);
+    socket && socket.on(`company-${companyId}-ContactListItem`, onCompanyContactLists);
 
     return () => {
-      socket.off(`company-${companyId}-ContactListItem`, onCompanyContactLists);
+      socket && socket.off(`company-${companyId}-ContactListItem`, onCompanyContactLists);
     };
   }, [contactListId]);
 

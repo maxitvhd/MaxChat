@@ -5,6 +5,12 @@ import Queue from "../../models/Queue";
 import User from "../../models/User";
 import Whatsapp from "../../models/Whatsapp";
 
+// Converte o id vindo do front; vazio/null/0 vira null (sem FK)
+const toIdOuNull = (valor: any): number | null => {
+  const n = Number(valor);
+  return valor === null || valor === undefined || valor === "" || !n ? null : n;
+};
+
 interface Data {
   id: number | string;
   name: string;
@@ -56,8 +62,9 @@ const UpdateService = async (data: Data): Promise<Campaign> => {
   await record.update({
     ...data,
     id: Number(data.id),
-    userId: Number(data.userId),
-    queueId: Number(data.queueId),
+    // Number(null) vira 0 e quebra a FK; sem usuário/fila escolhido fica null
+    userId: toIdOuNull(data.userId),
+    queueId: toIdOuNull(data.queueId),
     scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : undefined
   });
 

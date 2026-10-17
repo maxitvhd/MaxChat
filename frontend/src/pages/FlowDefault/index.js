@@ -188,7 +188,7 @@ const FlowDefault = () => {
       }
     }
 
-    socket.on(`company-${companyId}-contact`, onContact);
+    socket && socket.on(`company-${companyId}-contact`, onContact);
 
     getFlows().then(res => {
       getFlowsDefault(res)

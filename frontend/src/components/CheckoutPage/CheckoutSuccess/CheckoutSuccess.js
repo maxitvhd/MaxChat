@@ -35,10 +35,10 @@ function CheckoutSuccess(props) {
         }
       }
 
-      socket.on(`company-${companyId}-payment`, onCompanyPayment);
+      socket && socket.on(`company-${companyId}-payment`, onCompanyPayment);
 
       return () => {
-        socket.off(`company-${companyId}-payment`, onCompanyPayment);
+        socket && socket.off(`company-${companyId}-payment`, onCompanyPayment);
       }
     }
   }, [socket]);

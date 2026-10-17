@@ -147,9 +147,9 @@ const FileLists = () => {
             }
         };
 
-        socket.on(`company-${user.companyId}-file`, onFileEvent);
+        socket && socket.on(`company-${user.companyId}-file`, onFileEvent);
         return () => {
-            socket.off(`company-${user.companyId}-file`, onFileEvent);
+            socket && socket.off(`company-${user.companyId}-file`, onFileEvent);
         };
     }, [socket]);
 

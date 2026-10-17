@@ -147,10 +147,10 @@ const ContactLists = () => {
       }
     };
 
-    socket.on(`company-${companyId}-ContactList`, onContactListEvent);
+    socket && socket.on(`company-${companyId}-ContactList`, onContactListEvent);
 
     return () => {
-      socket.off(`company-${companyId}-ContactList`, onContactListEvent);
+      socket && socket.off(`company-${companyId}-ContactList`, onContactListEvent);
     };
   }, []);
 

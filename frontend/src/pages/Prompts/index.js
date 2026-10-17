@@ -155,9 +155,9 @@ const Prompts = () => {
       }
     };
 
-    socket.on(`company-${companyId}-prompt`, onPromptEvent);
+    socket && socket.on(`company-${companyId}-prompt`, onPromptEvent);
     return () => {
-      socket.off(`company-${companyId}-prompt`, onPromptEvent);
+      socket && socket.off(`company-${companyId}-prompt`, onPromptEvent);
     };
   }, [socket]);
 

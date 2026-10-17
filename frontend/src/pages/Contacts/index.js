@@ -313,10 +313,10 @@ const Contacts = () => {
                 dispatch({ type: "DELETE_CONTACT", payload: +data.contactId });
             }
         };
-        socket.on(`company-${companyId}-contact`, onContactEvent);
+        socket && socket.on(`company-${companyId}-contact`, onContactEvent);
 
         return () => {
-            socket.off(`company-${companyId}-contact`, onContactEvent);
+            socket && socket.off(`company-${companyId}-contact`, onContactEvent);
         };
     }, [socket, user.companyId]);
 

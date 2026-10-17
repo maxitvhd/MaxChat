@@ -120,10 +120,10 @@ const Tags = () => {
         dispatch({ type: "DELETE_TAGS", payload: +data.tagId });
       }
     };
-    socket.on(`company${user.companyId}-tag`, onCompanyTags);
+    socket && socket.on(`company${user.companyId}-tag`, onCompanyTags);
 
     return () => {
-      socket.off(`company${user.companyId}-tag`, onCompanyTags);
+      socket && socket.off(`company${user.companyId}-tag`, onCompanyTags);
     };
   }, [socket, user.companyId]);
 

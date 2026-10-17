@@ -226,10 +226,10 @@ const Schedules = () => {
       }
     }
 
-    socket.on(`company${user.companyId}-schedule`, onCompanySchedule)
+    socket && socket.on(`company${user.companyId}-schedule`, onCompanySchedule)
 
     return () => {
-      socket.off(`company${user.companyId}-schedule`, onCompanySchedule)
+      socket && socket.off(`company${user.companyId}-schedule`, onCompanySchedule)
     };
   }, [socket]);
 

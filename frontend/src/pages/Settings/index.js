@@ -68,10 +68,10 @@ const Settings = () => {
         });
       }
     };
-    socket.on(`company-${companyId}-settings`, onSettingsEvent);
+    socket && socket.on(`company-${companyId}-settings`, onSettingsEvent);
 
     return () => {
-      socket.off(`company-${companyId}-settings`, onSettingsEvent);
+      socket && socket.off(`company-${companyId}-settings`, onSettingsEvent);
     };
   }, [socket]);
 

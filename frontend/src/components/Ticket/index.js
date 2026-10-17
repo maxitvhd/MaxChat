@@ -147,16 +147,16 @@ const Ticket = () => {
         }
       };
 
-      socket.on("connect", onConnectTicket)
-      socket.on(`company-${companyId}-ticket`, onCompanyTicket);
-      socket.on(`company-${companyId}-contact`, onCompanyContactTicket);
+      socket && socket.on("connect", onConnectTicket)
+      socket && socket.on(`company-${companyId}-ticket`, onCompanyTicket);
+      socket && socket.on(`company-${companyId}-contact`, onCompanyContactTicket);
 
       return () => {
 
         socket.emit("joinChatBoxLeave", `${ticket.id}`);
-        socket.off("connect", onConnectTicket);
-        socket.off(`company-${companyId}-ticket`, onCompanyTicket);
-        socket.off(`company-${companyId}-contact`, onCompanyContactTicket);
+        socket && socket.off("connect", onConnectTicket);
+        socket && socket.off(`company-${companyId}-ticket`, onCompanyTicket);
+        socket && socket.off(`company-${companyId}-contact`, onCompanyContactTicket);
       };
     }
   }, [ticketId, ticket, history]);

@@ -48,10 +48,10 @@ const QrcodeModal = ({ open, onClose, whatsAppId }) => {
         onClose();
       }
     }
-    socket.on(`company-${companyId}-whatsappSession`, onWhatsappData);
+    socket && socket.on(`company-${companyId}-whatsappSession`, onWhatsappData);
 
     return () => {
-      socket.off(`company-${companyId}-whatsappSession`, onWhatsappData);
+      socket && socket.off(`company-${companyId}-whatsappSession`, onWhatsappData);
     };
   }, [whatsAppId, onClose]);
 

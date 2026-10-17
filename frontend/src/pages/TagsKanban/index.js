@@ -148,10 +148,10 @@ const Tags = () => {
         dispatch({ type: "DELETE_TAGS", payload: +data.tagId });
       }
     };
-    socket.on(`company${user.companyId}-tag`, onTagsEvent);
+    socket && socket.on(`company${user.companyId}-tag`, onTagsEvent);
 
     return () => {
-      socket.off(`company${user.companyId}-tag`, onTagsEvent);
+      socket && socket.off(`company${user.companyId}-tag`, onTagsEvent);
     };
   }, [socket]);
 

@@ -112,12 +112,12 @@ const Kanban = () => {
         fetchTickets();
       }
     };
-    socket.on(`company-${companyId}-ticket`, onAppMessage);
-    socket.on(`company-${companyId}-appMessage`, onAppMessage);
+    socket && socket.on(`company-${companyId}-ticket`, onAppMessage);
+    socket && socket.on(`company-${companyId}-appMessage`, onAppMessage);
 
     return () => {
-      socket.off(`company-${companyId}-ticket`, onAppMessage);
-      socket.off(`company-${companyId}-appMessage`, onAppMessage);
+      socket && socket.off(`company-${companyId}-ticket`, onAppMessage);
+      socket && socket.off(`company-${companyId}-appMessage`, onAppMessage);
     };
   }, [socket, startDate, endDate]);
 

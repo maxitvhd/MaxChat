@@ -176,7 +176,7 @@ const FlowBuilder = () => {
     }
   }
   
-  socket.on(`company-${companyId}-contact`, onContact);
+  socket && socket.on(`company-${companyId}-contact`, onContact);
 
   return () => {
     socket.disconnect();

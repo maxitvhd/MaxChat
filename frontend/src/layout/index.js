@@ -357,7 +357,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
         }
       }
 
-      socket.on(`company-${companyId}-auth`, onCompanyAuthLayout);
+      socket && socket.on(`company-${companyId}-auth`, onCompanyAuthLayout);
 
       socket.emit("userStatus");
       const interval = setInterval(() => {
@@ -365,7 +365,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
       }, 1000 * 60 * 5);
 
       return () => {
-        socket.off(`company-${companyId}-auth`, onCompanyAuthLayout);
+        socket && socket.off(`company-${companyId}-auth`, onCompanyAuthLayout);
         clearInterval(interval);
       };
     }

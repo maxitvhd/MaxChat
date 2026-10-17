@@ -181,10 +181,10 @@ export default function AnnouncementsPopover() {
           dispatch({ type: "DELETE_ANNOUNCEMENT", payload: +data.id });
         }
       };
-      socket.on(`company-announcement`, onCompanyAnnouncement);
+      socket && socket.on(`company-announcement`, onCompanyAnnouncement);
 
       return () => {
-        socket.off(`company-announcement`, onCompanyAnnouncement);
+        socket && socket.off(`company-announcement`, onCompanyAnnouncement);
       };
     }
   }, [user]);

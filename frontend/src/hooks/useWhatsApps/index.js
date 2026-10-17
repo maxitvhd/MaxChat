@@ -102,14 +102,14 @@ const useWhatsApps = () => {
       }
 
       if (socket.on) {
-        socket.on(`company-${companyId}-whatsapp`, onCompanyWhatsapp);
-        socket.on(`company-${companyId}-whatsappSession`, onCompanyWhatsappSession);
+        socket && socket.on(`company-${companyId}-whatsapp`, onCompanyWhatsapp);
+        socket && socket.on(`company-${companyId}-whatsappSession`, onCompanyWhatsappSession);
       }
 
       return () => {
         if (socket.off) {
-          socket.off(`company-${companyId}-whatsapp`, onCompanyWhatsapp);
-          socket.off(`company-${companyId}-whatsappSession`, onCompanyWhatsappSession);
+          socket && socket.off(`company-${companyId}-whatsapp`, onCompanyWhatsapp);
+          socket && socket.off(`company-${companyId}-whatsappSession`, onCompanyWhatsappSession);
         }
       };
     }

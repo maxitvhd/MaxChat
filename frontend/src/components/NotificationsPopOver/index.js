@@ -219,14 +219,14 @@ const NotificationsPopOver = (volume) => {
 				}
 			}
 
-			socket.on("connect", onConnectNotificationsPopover);
-			socket.on(`company-${companyId}-ticket`, onCompanyTicketNotificationsPopover);
-			socket.on(`company-${companyId}-appMessage`, onCompanyAppMessageNotificationsPopover);
+			socket && socket.on("connect", onConnectNotificationsPopover);
+			socket && socket.on(`company-${companyId}-ticket`, onCompanyTicketNotificationsPopover);
+			socket && socket.on(`company-${companyId}-appMessage`, onCompanyAppMessageNotificationsPopover);
 
 			return () => {
-				socket.off("connect", onConnectNotificationsPopover);
-				socket.off(`company-${companyId}-ticket`, onCompanyTicketNotificationsPopover);
-				socket.off(`company-${companyId}-appMessage`, onCompanyAppMessageNotificationsPopover);
+				socket && socket.off("connect", onConnectNotificationsPopover);
+				socket && socket.off(`company-${companyId}-ticket`, onCompanyTicketNotificationsPopover);
+				socket && socket.off(`company-${companyId}-appMessage`, onCompanyAppMessageNotificationsPopover);
 			};
 		}
 	}, [user, profile, queues, showTicketWithoutQueue, socket, showNotificationPending, showGroupNotification]);

@@ -160,9 +160,9 @@ const Campaigns = () => {
       }
     }
 
-    socket.on(`company-${companyId}-campaign`, onCompanyCampaign);
+    socket && socket.on(`company-${companyId}-campaign`, onCompanyCampaign);
     return () => {
-      socket.off(`company-${companyId}-campaign`, onCompanyCampaign);
+      socket && socket.off(`company-${companyId}-campaign`, onCompanyCampaign);
     };
   }, [user]);
 

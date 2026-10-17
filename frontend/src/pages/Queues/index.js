@@ -126,10 +126,10 @@ const Queues = () => {
         dispatch({ type: "DELETE_QUEUE", payload: data.queueId });
       }
     };
-    socket.on(`company-${companyId}-queue`, onQueueEvent);
+    socket && socket.on(`company-${companyId}-queue`, onQueueEvent);
 
     return () => {
-      socket.off(`company-${companyId}-queue`, onQueueEvent);
+      socket && socket.off(`company-${companyId}-queue`, onQueueEvent);
     };
   }, [socket, companyId]);
 

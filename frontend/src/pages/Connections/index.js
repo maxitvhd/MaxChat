@@ -224,7 +224,7 @@ const Connections = () => {
 
   useEffect(() => {
     // const socket = socketManager.GetSocket();
-    socket.on(`importMessages-${user.companyId}`, (data) => {
+    socket && socket.on(`importMessages-${user.companyId}`, (data) => {
       if (data.action === "refresh") {
         setStatusImport([]);
         history.go(0);
