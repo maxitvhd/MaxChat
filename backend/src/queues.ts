@@ -966,7 +966,7 @@ async function handleDispatchCampaign(job) {
 
             const options = await getMessageOptions(campaign.mediaName, filePath, String(campaign.companyId), `\u200c ${campaignShipping.message}`);
             if (Object.keys(options).length) {
-              if (options.mimetype === "audio/mp4") {
+              if (options.audio && (campaignShipping.message || "").replace(/\u200c/g, "").trim()) { // áudio: manda o texto antes, se houver
                 const audioMessage = await wbot.sendMessage(chatId, {
                   text: `\u200c ${campaignShipping.message}`
                 });
@@ -1020,7 +1020,7 @@ async function handleDispatchCampaign(job) {
 
           const options = await getMessageOptions(campaign.mediaName, filePath, String(campaign.companyId), campaignShipping.message);
           if (Object.keys(options).length) {
-            if (options.mimetype === "audio/mp4") {
+            if (options.audio && (campaignShipping.message || "").replace(/\u200c/g, "").trim()) { // áudio: manda o texto antes, se houver
               await wbot.sendMessage(chatId, {
                 text: campaignShipping.message
               });

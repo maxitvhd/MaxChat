@@ -36,12 +36,14 @@ const os = require("os");
 
 const publicFolder = path.resolve(__dirname, "..", "..", "..", "public");
 
+// Mensagem de voz (ptt) do WhatsApp só toca em Opus/Ogg. Antes saía um mp3
+// rotulado como audio/mp4 e o celular mostrava "formato não suportado".
 const processAudio = async (audio: string, companyId: string): Promise<string> => {
-  const outputAudio = `${publicFolder}/company${companyId}/${new Date().getTime()}.mp3`;
+  const outputAudio = `${publicFolder}/company${companyId}/${new Date().getTime()}.ogg`;
   
   return new Promise((resolve, reject) => {
     exec(
-      `${ffmpegPath.path} -i ${audio} -af "afftdn=nr=5:nf=-40, highpass=f=100, lowpass=f=4000, dynaudnorm=f=1000, aresample=44100, volume=1.0" -vn -ar 44100 -ac 2 -b:a 256k ${outputAudio} -y`,
+      `"${ffmpegPath.path}" -i "${audio}" -af "afftdn=nr=5:nf=-40, highpass=f=100, lowpass=f=4000, dynaudnorm=f=1000" -vn -ac 1 -ar 48000 -c:a libopus -b:a 64k "${outputAudio}" -y`,
       (error, _stdout, _stderr) => {
         if (error) reject(error);
         resolve(outputAudio);
@@ -93,13 +95,13 @@ export const getMessageOptions = async (
       if (typeAudio) {
         options = {
           audio: fs.readFileSync(convert),
-          mimetype: "audio/mp4",
+          mimetype: "audio/ogg; codecs=opus",
           ptt: true
         };
       } else {
         options = {
           audio: fs.readFileSync(convert),
-          mimetype: typeAudio ? "audio/mp4" : mimeType,
+          mimetype: "audio/ogg; codecs=opus",
           ptt: true
         };
       }
