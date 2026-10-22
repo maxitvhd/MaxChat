@@ -414,7 +414,8 @@ const Connections = () => {
             )}
           />
         )}
-        {whatsApp.status === "DISCONNECTED" && (
+        {/* PENDING (sessão encerrada pelo WhatsApp) também precisa dos botões de reconectar */}
+        {(whatsApp.status === "DISCONNECTED" || whatsApp.status === "PENDING") && (
           <Can
             role={user.profile === "user" && user.allowConnections === "enabled" ? "admin" : user.profile}
             perform="connections-page:addConnection"
