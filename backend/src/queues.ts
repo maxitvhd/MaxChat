@@ -909,7 +909,7 @@ async function handleDispatchCampaign(job) {
           companyId: campaign.companyId,
           name: campaignShipping.contact.name,
           number: campaignShipping.number,
-          email: campaignShipping.contact.email,
+          email: campaignShipping.contact.email || "", // Contact.email não aceita null
           whatsappId: campaign.whatsappId,
           profilePicUrl: ""
         }
