@@ -43,7 +43,9 @@ const processAudio = async (audio: string, companyId: string): Promise<string> =
   
   return new Promise((resolve, reject) => {
     exec(
-      `"${ffmpegPath.path}" -i "${audio}" -af "afftdn=nr=5:nf=-40, highpass=f=100, lowpass=f=4000, dynaudnorm=f=1000" -vn -ac 1 -ar 48000 -c:a libopus -b:a 64k "${outputAudio}" -y`,
+      // ffmpeg do sistema primeiro: o binário embutido (2018) gera um Ogg que
+      // o WhatsApp atual não reproduz
+      `"${fs.existsSync("/usr/bin/ffmpeg") ? "/usr/bin/ffmpeg" : ffmpegPath.path}" -i "${audio}" -vn -map_metadata -1 -ac 1 -ar 48000 -c:a libopus -b:a 48k -vbr on -application voip -avoid_negative_ts make_zero -f ogg "${outputAudio}" -y`,
       (error, _stdout, _stderr) => {
         if (error) reject(error);
         resolve(outputAudio);
