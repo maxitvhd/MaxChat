@@ -508,6 +508,15 @@ const Connections = () => {
             <SignalCellularConnectedNoInternet2Bar color="secondary" />
           </CustomToolTip>
         )}
+        {/* PENDING: sessão caiu (ex.: conflito) e espera novo QR. Antes não tinha ícone */}
+        {whatsApp.status === "PENDING" && (
+          <CustomToolTip
+            title="Aguardando conexão"
+            content="A sessão foi encerrada pelo WhatsApp. Gere um novo QR Code e leia com o celular."
+          >
+            <SignalCellularConnectedNoInternet2Bar color="secondary" />
+          </CustomToolTip>
+        )}
       </div>
     );
   };
