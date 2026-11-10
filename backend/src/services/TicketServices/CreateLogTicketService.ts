@@ -35,18 +35,25 @@ const CreateLogTicketService = async ({
   ticketId,
   queueId
 }: Request): Promise<void> => {
-  await LogTicket.create({
-    type,
-    ticketId: Number(ticketId),
-    ...(userId !== undefined ? { userId: Number(userId) } : {}),
-    ...(queueId !== undefined ? { queueId: Number(queueId) } : {})
-  });
+  const validUserId =
+    userId !== undefined && userId !== null && userId !== "" && Number(userId) > 0
+      ? Number(userId)
+      : undefined;
+  const validQueueId =
+    queueId !== undefined && queueId !== null && queueId !== "" && Number(queueId) > 0
+      ? Number(queueId)
+      : undefined;
 
-  // socketEmit({
-  //   companyId,
-  //   type: "ticket:update",
-  //   payload: ticket
-  // });
+  try {
+    await LogTicket.create({
+      type,
+      ticketId: Number(ticketId),
+      ...(validUserId ? { userId: validUserId } : {}),
+      ...(validQueueId ? { queueId: validQueueId } : {})
+    });
+  } catch (err) {
+    // Ignora falha de log para nunca travar fechamento/atualização de ticket
+  }
 };
 
 export default CreateLogTicketService;

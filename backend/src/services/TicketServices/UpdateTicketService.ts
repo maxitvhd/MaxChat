@@ -99,15 +99,28 @@ const UpdateTicketService = async ({
     const oldQueueId = ticket?.queueId;
 
     if (isNil(ticket.whatsappId) && status === "closed") {
+      await ticket.update({
+        status: "closed",
+        unreadMessages: 0
+      });
+
+      await Ticket.update(
+        { status: "closed", unreadMessages: 0 },
+        {
+          where: {
+            companyId,
+            contactId: ticket.contactId,
+            id: { [Op.ne]: ticket.id },
+            status: { [Op.ne]: "closed" }
+          }
+        }
+      );
+
       await CreateLogTicketService({
         userId,
         queueId: ticket.queueId,
         ticketId,
         type: "closed"
-      });
-
-      await ticket.update({
-        status: "closed"
       });
 
       io.of(String(companyId))
@@ -205,15 +218,17 @@ const UpdateTicketService = async ({
           const ratingTxt = ratingMessage || "";
           let bodyRatingMessage = `\u200e ${ratingTxt}\n`;
 
-          if (ticket.channel === "whatsapp" && ticket.whatsapp.status === 'CONNECTED') {
-            const msg = await SendWhatsAppMessage({ body: bodyRatingMessage, ticket, isForwarded: false });
-            await verifyMessage(msg, ticket, ticket.contact);
-          } else
-            if (["facebook", "instagram"].includes(ticket.channel)) {
-
+          try {
+            if (ticket.channel === "whatsapp" && ticket.whatsapp?.status === 'CONNECTED') {
+              const msg = await SendWhatsAppMessage({ body: bodyRatingMessage, ticket, isForwarded: false });
+              await verifyMessage(msg, ticket, ticket.contact);
+            } else if (["facebook", "instagram"].includes(ticket.channel)) {
               const msg = await sendFaceMessage({ body: bodyRatingMessage, ticket });
               await verifyMessageFace(msg, bodyRatingMessage, ticket, ticket.contact);
             }
+          } catch (e) {
+            logger.warn(`Erro ao enviar mensagem de avaliação no ticket ${ticket.id}: ${e}`);
+          }
 
           await ticketTraking.update({
             userId: ticket.userId,
@@ -279,17 +294,20 @@ const UpdateTicketService = async ({
           } else {
             body = `\u200e ${complationMessage}`;
           }
-          if (ticket.channel === "whatsapp" && (!ticket.isGroup || groupAsTicket === "enabled") && ticket.whatsapp.status === 'CONNECTED') {
-            const sentMessage = await SendWhatsAppMessage({ body, ticket, isForwarded: false });
+          try {
+            if (ticket.channel === "whatsapp" && (!ticket.isGroup || groupAsTicket === "enabled") && ticket.whatsapp?.status === 'CONNECTED') {
+              const sentMessage = await SendWhatsAppMessage({ body, ticket, isForwarded: false });
 
-            await verifyMessage(sentMessage, ticket, ticket.contact);
+              await verifyMessage(sentMessage, ticket, ticket.contact);
+            }
 
-          }
+            if (["facebook", "instagram"].includes(ticket.channel) && (!ticket.isGroup || groupAsTicket === "enabled")) {
+              const sentMessage = await sendFaceMessage({ body, ticket });
 
-          if (["facebook", "instagram"].includes(ticket.channel) && (!ticket.isGroup || groupAsTicket === "enabled")) {
-            const sentMessage = await sendFaceMessage({ body, ticket });
-
-            // await verifyMessageFace(sentMessage, body, ticket, ticket.contact );
+              // await verifyMessageFace(sentMessage, body, ticket, ticket.contact );
+            }
+          } catch (e) {
+            logger.warn(`Erro ao enviar mensagem de despedida no ticket ${ticket.id}: ${e}`);
           }
         }
       }
@@ -299,44 +317,34 @@ const UpdateTicketService = async ({
       ticketTraking.whatsappId = ticket?.whatsappId;
       ticketTraking.userId = ticket.userId;
 
-      // queueId = null;
-      // userId = null;
+      await ticketTraking.save();
+
+      await ticket.update({
+        status: "closed",
+        unreadMessages: 0,
+        lastFlowId: null,
+        dataWebhook: null,
+        hashFlowId: null,
+      });
+
+      await Ticket.update(
+        { status: "closed", unreadMessages: 0 },
+        {
+          where: {
+            companyId,
+            contactId: ticket.contactId,
+            id: { [Op.ne]: ticket.id },
+            status: { [Op.ne]: "closed" }
+          }
+        }
+      );
+
       //loga fim de atendimento
       await CreateLogTicketService({
         userId,
         queueId: ticket.queueId,
         ticketId,
         type: "closed"
-      });
-
-      // try {
-      //   // Retrieve tagIds associated with the provided ticketId from TicketTags
-      //   const ticketTags = await TicketTag.findAll({ where: { ticketId } });
-      //   const tagIds = ticketTags.map((ticketTag) => ticketTag.tagId);
-
-      //   // Find the tagIds with kanban = 1 in the Tags table
-      //   const tagsWithKanbanOne = await Tag.findAll({
-      //     where: {
-      //       id: tagIds,
-      //       kanban: 1,
-      //     },
-      //   });
-
-      //   // Remove the tagIds with kanban = 1 from TicketTags
-      //   const tagIdsWithKanbanOne = tagsWithKanbanOne.map((tag) => tag.id);
-      //   if (tagIdsWithKanbanOne)
-      //     await TicketTag.destroy({ where: { ticketId, tagId: tagIdsWithKanbanOne } });
-      // } catch (error) {
-      //   Sentry.captureException(error);
-      // }
-
-      await ticketTraking.save();
-
-      await ticket.update({
-        status: "closed",
-        lastFlowId: null,
-        dataWebhook: null,
-        hashFlowId: null,
       });
 
       io.of(String(companyId))
@@ -384,7 +392,7 @@ const UpdateTicketService = async ({
             null,
             ticket.channel, false, false, settings, isTransfered);
 
-          await FindOrCreateATicketTrakingService({ ticketId: newTicketTransfer.id, companyId, whatsappId: ticket.whatsapp.id, userId });
+          await FindOrCreateATicketTrakingService({ ticketId: newTicketTransfer.id, companyId, whatsappId: ticket.whatsapp?.id || ticket.whatsappId, userId });
 
         }
 
@@ -421,7 +429,7 @@ const UpdateTicketService = async ({
 
         if (settings.sendMsgTransfTicket === "enabled") {
           // Mensagem de transferencia da FILA
-          if ((oldQueueId !== queueId || oldUserId !== userId) && !isNil(oldQueueId) && !isNil(queueId) && !isNil(queueId) && ticket.whatsapp.status === 'CONNECTED') {
+          if ((oldQueueId !== queueId || oldUserId !== userId) && !isNil(oldQueueId) && !isNil(queueId) && !isNil(queueId) && ticket.whatsapp?.status === 'CONNECTED') {
 
             const wbot = await GetTicketWbot(ticket);
             const msgtxt = formatBody(`\u200e ${settings.transferMessage.replace("${queue.name}", queue?.name)}`, ticket);
@@ -560,7 +568,7 @@ const UpdateTicketService = async ({
 
         if (settings.sendMsgTransfTicket === "enabled") {
           // Mensagem de transferencia da FILA
-          if (oldQueueId !== queueId || oldUserId !== userId && !isNil(oldQueueId) && !isNil(queueId) && ticket.whatsapp.status === 'CONNECTED') {
+          if (oldQueueId !== queueId || oldUserId !== userId && !isNil(oldQueueId) && !isNil(queueId) && ticket.whatsapp?.status === 'CONNECTED') {
 
             const wbot = await GetTicketWbot(ticket);
             const msgtxt = formatBody(`\u200e ${settings.transferMessage.replace("${queue.name}", queue?.name)}`, ticket);
@@ -800,8 +808,9 @@ const UpdateTicketService = async ({
 
     return { ticket, oldStatus, oldUserId };
   } catch (err) {
-    
+    logger.error(`Erro em UpdateTicketService (ticket ${ticketId}): ${err}`);
     Sentry.captureException(err);
+    throw err;
   }
 };
 
