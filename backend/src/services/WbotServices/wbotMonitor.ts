@@ -18,6 +18,8 @@ import CreateMessageService from "../MessageServices/CreateMessageService";
 import CompaniesSettings from "../../models/CompaniesSettings";
 import path from "path";
 import { verifyMessage } from "./wbotMessageListener";
+import { findExistingContact } from "../ContactServices/CreateOrUpdateContactService";
+import { consolidateAndFindContactTicket } from "../TicketServices/FindOrCreateTicketService";
 
 let i = 0;
 
@@ -58,30 +60,46 @@ const wbotMonitor = async (
             // text:
             // "\u200e *Mensagem Automática:*\n\nAs chamadas de voz e vídeo estão desabilitadas para esse WhatsApp, favor enviar uma mensagem de texto. Obrigado",              
           });
-          const number = node.attrs.from.split(":")[0].replace(/\D/g, "");
+          const rawCaller =
+            (node.attrs as any)?.caller_pn ||
+            content?.attrs?.caller_pn ||
+            node.attrs.from;
+          const number = String(rawCaller).split(":")[0].replace(/\D/g, "");
+          const lidAttr = node.attrs.from?.includes("@lid")
+            ? `${node.attrs.from.split(":")[0].replace(/@.*/, "")}@lid`
+            : undefined;
 
-          const contact = await Contact.findOne({
-            where: { companyId, number },
+          const contact = await findExistingContact({
+            companyId,
+            number,
+            remoteJid: String(rawCaller),
+            lid: lidAttr,
+            isGroup: false
           });
 
           if (!contact)
-            return
+            return;
 
-          const [ticket] = await Ticket.findOrCreate({
-            where: {
-              contactId: contact.id,
+          let { ticket, wasReopened } = await consolidateAndFindContactTicket(
+            contact.id,
+            companyId,
+            wbot.id
+          );
+
+          if (ticket) {
+            await ticket.update({
               whatsappId: wbot.id,
-              status: ["open", "pending", "nps", "lgpd"],
-              companyId
-            },
-            defaults: {
+              status: ticket.status === "open" ? "open" : "pending"
+            });
+          } else {
+            ticket = await Ticket.create({
               companyId,
               contactId: contact.id,
               whatsappId: wbot.id,
               isGroup: contact.isGroup,
               status: "pending"
-            }
-          });
+            });
+          }
 
           //se não existir o ticket não faz nada.
           if (!ticket) return;

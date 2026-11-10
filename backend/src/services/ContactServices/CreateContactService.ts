@@ -4,6 +4,7 @@ import Contact from "../../models/Contact";
 import ContactCustomField from "../../models/ContactCustomField";
 import logger from "../../utils/logger";
 import ContactWallet from "../../models/ContactWallet";
+import { findExistingContact } from "./CreateOrUpdateContactService";
 
 interface ExtraInfo extends ContactCustomField {
   name: string;
@@ -40,12 +41,20 @@ const CreateContactService = async ({
   wallets
 }: Request): Promise<Contact> => {
 
-  const numberExists = await Contact.findOne({
-    where: { number, companyId }
+  const numberExists = await findExistingContact({
+    companyId,
+    number,
+    remoteJid
   });
   if (numberExists) {
-
-    throw new AppError("ERR_DUPLICATED_CONTACT");
+    // Em vez de duplicar ou bloquear, atualiza dados básicos se necessário e retorna o contato existente
+    await numberExists.update({
+      name: name || numberExists.name,
+      email: email || numberExists.email,
+      ...(typeof acceptAudioMessage === "boolean" ? { acceptAudioMessage } : {}),
+      ...(typeof active === "boolean" ? { active } : {})
+    });
+    return numberExists;
   }
 
   const settings = await CompaniesSettings.findOne({

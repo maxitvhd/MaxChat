@@ -88,8 +88,8 @@ const TicketsQueuesService = async ({
       where: {       
         status: "open"
       },
-      group: ['companyId','contactId','queueId', 'whatsappId'],
-      attributes: ['companyId','contactId','queueId', 'whatsappId', [fn('max', col('id')), 'id']],
+      group: ['companyId', 'contactId'],
+      attributes: ['companyId', 'contactId', [fn('max', col('id')), 'id']],
     });
     if (maxTicketIds) {
       maxTicketsFilter.push(maxTicketIds.map(t => t.id));

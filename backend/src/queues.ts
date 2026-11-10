@@ -35,7 +35,10 @@ import { GetWhatsapp } from "./helpers/GetWhatsapp";
 const CronJob = require('cron').CronJob;
 import CompaniesSettings from "./models/CompaniesSettings";
 import { verifyMediaMessage, verifyMessage } from "./services/WbotServices/wbotMessageListener";
-import FindOrCreateTicketService from "./services/TicketServices/FindOrCreateTicketService";
+import FindOrCreateTicketService, {
+  consolidateAndFindContactTicket
+} from "./services/TicketServices/FindOrCreateTicketService";
+import { findExistingContact } from "./services/ContactServices/CreateOrUpdateContactService";
 import CreateLogTicketService from "./services/TicketServices/CreateLogTicketService";
 import formatBody from "./helpers/Mustache";
 import TicketTag from "./models/TicketTag";
@@ -180,16 +183,20 @@ async function handleSendScheduledMessage(job) {
     }
 
     if (schedule.openTicket === "enabled") {
-      let ticket = await Ticket.findOne({
-        where: {
-          contactId: schedule.contact.id,
-          companyId: schedule.companyId,
-          whatsappId: whatsapp.id,
-          status: ["open", "pending"]
-        }
-      })
+      let { ticket } = await consolidateAndFindContactTicket(
+        schedule.contact.id,
+        schedule.companyId,
+        whatsapp.id
+      );
 
-      if (!ticket)
+      if (ticket) {
+        await ticket.update({
+          whatsappId: whatsapp.id,
+          queueId: schedule.queueId || ticket.queueId,
+          userId: schedule.ticketUserId || ticket.userId,
+          status: schedule.statusTicket || "pending"
+        });
+      } else {
         ticket = await Ticket.create({
           companyId: schedule.companyId,
           contactId: schedule.contactId,
@@ -197,7 +204,8 @@ async function handleSendScheduledMessage(job) {
           queueId: schedule.queueId,
           userId: schedule.ticketUserId,
           status: schedule.statusTicket
-        })
+        });
+      }
 
       ticket = await ShowTicketService(ticket.id, schedule.companyId);
 
@@ -900,32 +908,40 @@ async function handleDispatchCampaign(job) {
     const chatId = campaignShipping.contact.isGroup ? `${campaignShipping.number}@g.us` : `${campaignShipping.number}@s.whatsapp.net`;
 
     if (campaign.openTicket === "enabled") {
-      const [contact] = await Contact.findOrCreate({
-        where: {
-          number: campaignShipping.number,
-          companyId: campaign.companyId
-        },
-        defaults: {
+      let contact = await findExistingContact({
+        companyId: campaign.companyId,
+        number: campaignShipping.number,
+        remoteJid: chatId,
+        isGroup: !!campaignShipping.contact.isGroup
+      });
+
+      if (!contact) {
+        contact = await Contact.create({
           companyId: campaign.companyId,
           name: campaignShipping.contact.name,
           number: campaignShipping.number,
           email: campaignShipping.contact.email || "", // Contact.email não aceita null
           whatsappId: campaign.whatsappId,
           profilePicUrl: ""
-        }
-      })
+        });
+      }
+
       const whatsapp = await Whatsapp.findByPk(campaign.whatsappId);
 
-      let ticket = await Ticket.findOne({
-        where: {
-          contactId: contact.id,
-          companyId: campaign.companyId,
-          whatsappId: whatsapp.id,
-          status: ["open", "pending"]
-        }
-      })
+      let { ticket } = await consolidateAndFindContactTicket(
+        contact.id,
+        campaign.companyId,
+        whatsapp.id
+      );
 
-      if (!ticket)
+      if (ticket) {
+        await ticket.update({
+          whatsappId: whatsapp.id,
+          queueId: campaign?.queueId || ticket.queueId,
+          userId: campaign?.userId || ticket.userId,
+          status: campaign?.statusTicket || "pending"
+        });
+      } else {
         ticket = await Ticket.create({
           companyId: campaign.companyId,
           contactId: contact.id,
@@ -933,7 +949,8 @@ async function handleDispatchCampaign(job) {
           queueId: campaign?.queueId,
           userId: campaign?.userId,
           status: campaign?.statusTicket
-        })
+        });
+      }
 
       ticket = await ShowTicketService(ticket.id, campaign.companyId);
 

@@ -1,23 +1,104 @@
 import { Op } from "sequelize";
-import { sub } from "date-fns";
 
 import Contact from "../../models/Contact";
 import Ticket from "../../models/Ticket";
+import Message from "../../models/Message";
 import ShowTicketService from "./ShowTicketService";
-import FindOrCreateATicketTrakingService from "./FindOrCreateATicketTrakingService";
 import { isNil } from "lodash";
 import { getIO } from "../../libs/socket";
 import logger from "../../utils/logger";
 import Whatsapp from "../../models/Whatsapp";
-import CompaniesSettings from "../../models/CompaniesSettings";
 import CreateLogTicketService from "./CreateLogTicketService";
-import AppError from "../../errors/AppError";
-import UpdateTicketService from "./UpdateTicketService";
 
-// interface Response {
-//   ticket: Ticket;
-//   // isCreated: boolean;
-// }
+// Consolida tickets ativos duplicados do mesmo contato na empresa (sem apagar registros do banco)
+// e retorna o ticket ativo ou o último ticket fechado para ser reaberto, independentemente da conexão/origem
+export const consolidateAndFindContactTicket = async (
+  contactId: number,
+  companyId: number,
+  preferredWhatsappId?: number
+): Promise<{ ticket: Ticket | null; wasReopened: boolean }> => {
+  const io = getIO();
+
+  const activeTickets = await Ticket.findAll({
+    where: {
+      status: {
+        [Op.or]: ["open", "pending", "group", "nps", "lgpd"]
+      },
+      contactId,
+      companyId
+    },
+    order: [
+      ["updatedAt", "DESC"],
+      ["id", "DESC"]
+    ]
+  });
+
+  if (activeTickets.length > 0) {
+    // Prioriza ticket em atendimento ("open"), depois o que já tem whatsappId/fila e atualização mais recente
+    activeTickets.sort((a, b) => {
+      const aOpen = a.status === "open" ? 1 : 0;
+      const bOpen = b.status === "open" ? 1 : 0;
+      if (aOpen !== bOpen) return bOpen - aOpen;
+
+      const aHasWpp = !isNil(a.whatsappId) ? 1 : 0;
+      const bHasWpp = !isNil(b.whatsappId) ? 1 : 0;
+      if (aHasWpp !== bHasWpp) return bHasWpp - aHasWpp;
+
+      const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      if (aTime !== bTime) return bTime - aTime;
+
+      return b.id - a.id;
+    });
+
+    const primaryTicket = activeTickets[0];
+    const duplicates = activeTickets.slice(1);
+
+    // Se havia mais de uma conversa aberta/pendente para o mesmo contato, unifica as mensagens
+    // na conversa principal e fecha as duplicadas sem excluir nada do banco
+    for (const dup of duplicates) {
+      try {
+        await Message.update(
+          { ticketId: primaryTicket.id },
+          { where: { ticketId: dup.id, companyId } }
+        );
+        if (!primaryTicket.queueId && dup.queueId) {
+          await primaryTicket.update({ queueId: dup.queueId });
+        }
+        if (!primaryTicket.userId && dup.userId) {
+          await primaryTicket.update({ userId: dup.userId });
+        }
+        await dup.update({ status: "closed", unreadMessages: 0 });
+        io.of(String(companyId)).emit(`company-${companyId}-ticket`, {
+          action: "delete",
+          ticketId: dup.id
+        });
+      } catch (err) {
+        logger.warn(`Erro ao consolidar ticket duplicado ${dup.id} -> ${primaryTicket.id}: ${err}`);
+      }
+    }
+
+    return { ticket: primaryTicket, wasReopened: false };
+  }
+
+  // Se não há ticket ativo, busca a última conversa do contato na empresa (independentemente de whatsappId ou tempo)
+  const lastTicket = await Ticket.findOne({
+    where: {
+      contactId,
+      companyId
+    },
+    order: [
+      ["updatedAt", "DESC"],
+      ["id", "DESC"]
+    ]
+  });
+
+  if (lastTicket) {
+    return { ticket: lastTicket, wasReopened: true };
+  }
+
+  return { ticket: null, wasReopened: false };
+};
 
 const FindOrCreateTicketService = async (
   contact: Contact,
@@ -34,165 +115,151 @@ const FindOrCreateTicketService = async (
   isTransfered?: boolean,
   isCampaign: boolean = false
 ): Promise<Ticket> => {
-  // try {
-  // let isCreated = false;
-
-  let openAsLGPD = false
-  if (settings.enableLGPD) { //adicionar lgpdMessage
-
-    openAsLGPD = !isCampaign &&
+  let openAsLGPD = false;
+  if (settings?.enableLGPD) {
+    openAsLGPD =
+      !isCampaign &&
       !isTransfered &&
       settings.enableLGPD === "enabled" &&
       settings.lgpdMessage !== "" &&
       (settings.lgpdConsent === "enabled" ||
-        (settings.lgpdConsent === "disabled" && isNil(contact?.lgpdAcceptedAt)))
+        (settings.lgpdConsent === "disabled" && isNil(contact?.lgpdAcceptedAt)));
   }
 
   const io = getIO();
+  const DirectTicketsToWallets = settings?.DirectTicketsToWallets;
+  const targetContactId = groupContact ? groupContact.id : contact.id;
 
-  const DirectTicketsToWallets = settings.DirectTicketsToWallets;
+  let { ticket, wasReopened } = await consolidateAndFindContactTicket(
+    targetContactId,
+    companyId,
+    whatsapp?.id
+  );
 
-  let ticket = await Ticket.findOne({
-    where: {
-      status: {
-        [Op.or]: ["open", "pending", "group", "nps", "lgpd"]
-      },
-      contactId: groupContact ? groupContact.id : contact.id,
-      companyId,
-      whatsappId: whatsapp.id
-    },
-    order: [["id", "DESC"]]
-  });
+  // Caso 1: Já existe uma conversa ativa para esse contato — reaproveita a mesma conversa
+  if (ticket && !wasReopened) {
+    const updatePayload: any = {};
 
-
-
-
-  if (ticket) {
-    if (isCampaign) {
-      await ticket.update({
-        userId: userId !== ticket.userId ? ticket.userId : userId,
-        queueId: queueId !== ticket.queueId ? ticket.queueId : queueId,
-      })
-    } else {
-      await ticket.update({ unreadMessages, isBot: false });
+    if (whatsapp?.id && ticket.whatsappId !== whatsapp.id) {
+      updatePayload.whatsappId = whatsapp.id;
     }
+
+    if (isCampaign) {
+      updatePayload.userId = userId !== ticket.userId ? ticket.userId : userId;
+      updatePayload.queueId = queueId !== ticket.queueId ? ticket.queueId : queueId;
+    } else {
+      updatePayload.unreadMessages = unreadMessages;
+      updatePayload.isBot = false;
+      if (queueId != 0 && !isNil(queueId) && isNil(ticket.queueId)) {
+        updatePayload.queueId = queueId;
+      }
+      if (userId != 0 && !isNil(userId) && isNil(ticket.userId)) {
+        updatePayload.userId = userId;
+      }
+    }
+
+    await ticket.update(updatePayload);
+    ticket = await ShowTicketService(ticket.id, companyId);
+
+    io.of(String(companyId)).emit(`company-${companyId}-ticket`, {
+      action: "update",
+      ticket
+    });
+
+    return ticket;
+  }
+
+  // Define o status padrão de abertura/reabertura
+  let targetStatus =
+    !isImported && !isNil(settings?.enableLGPD) && openAsLGPD && !groupContact
+      ? "lgpd"
+      : whatsapp?.groupAsTicket === "enabled" || !groupContact
+      ? "pending"
+      : "group";
+
+  let targetUserId: number | null = userId != 0 && !isNil(userId) ? userId : null;
+  let targetQueueId: number | null = queueId != 0 && !isNil(queueId) ? queueId : null;
+
+  if (DirectTicketsToWallets && contact.id) {
+    const wallet: any = contact;
+    const wallets = await wallet.getWallets();
+    if (wallets && wallets[0]?.id) {
+      targetStatus =
+        !isImported && !isNil(settings?.enableLGPD) && openAsLGPD && !groupContact
+          ? "lgpd"
+          : whatsapp?.groupAsTicket === "enabled" || !groupContact
+          ? "open"
+          : "group";
+      targetUserId = wallets[0].id;
+    }
+  }
+
+  // Caso 2: O contato já tinha uma conversa anterior (fechada) — reabre a mesma conversa independentemente de onde chamou
+  if (ticket && wasReopened) {
+    await ticket.update({
+      status: targetStatus,
+      unreadMessages,
+      whatsappId: whatsapp?.id || ticket.whatsappId,
+      companyId,
+      isGroup: !!groupContact,
+      isBot: groupContact ? false : true,
+      channel: channel || whatsapp?.channel || ticket.channel || "whatsapp",
+      userId: targetUserId,
+      queueId: targetQueueId,
+      amountUsedBotQueues: 0,
+      amountUsedBotQueuesNPS: 0,
+      sendInactiveMessage: false,
+      isActiveDemand: false,
+      flowWebhook: false,
+      lastFlowId: null,
+      hashFlowId: null,
+      flowStopped: null
+    });
 
     ticket = await ShowTicketService(ticket.id, companyId);
-    // 
 
-    if (!isCampaign && !isForward) {
-      // @ts-ignore: Unreachable code error
-      if ((Number(ticket?.userId) !== Number(userId) && userId !== 0 && userId !== "" && userId !== "0" && !isNil(userId) && !ticket.isGroup)
-        // @ts-ignore: Unreachable code error 
-        || (queueId !== 0 && Number(ticket?.queueId) !== Number(queueId) && queueId !== "" && queueId !== "0" && !isNil(queueId))) {
-        throw new AppError(`Ticket em outro atendimento. ${"Atendente: " + ticket?.user?.name} - ${"Fila: " + ticket?.queue?.name}`);
-      }
-    }
+    io.of(String(companyId)).emit(`company-${companyId}-ticket`, {
+      action: "update",
+      ticket
+    });
 
-    // isCreated = true;
+    await CreateLogTicketService({
+      ticketId: ticket.id,
+      type: openAsLGPD ? "lgpd" : "reopen"
+    });
 
-    return ticket
-
+    return ticket;
   }
 
-  const timeCreateNewTicket = whatsapp.timeCreateNewTicket;
+  // Caso 3: Primeiro contato da história desse cliente na empresa — cria a conversa única
+  const ticketData: any = {
+    contactId: targetContactId,
+    status: targetStatus,
+    isGroup: !!groupContact,
+    unreadMessages,
+    whatsappId: whatsapp?.id,
+    companyId,
+    isBot: groupContact ? false : true,
+    channel: channel || whatsapp?.channel || "whatsapp",
+    imported: isImported ? new Date() : null,
+    isActiveDemand: false,
+    ...(targetUserId ? { userId: targetUserId } : {}),
+    ...(targetQueueId ? { queueId: targetQueueId } : {})
+  };
 
-  if (!ticket && timeCreateNewTicket !== 0) {
-
-    // @ts-ignore: Unreachable code error
-    if (timeCreateNewTicket !== 0 && timeCreateNewTicket !== "0") {
-      ticket = await Ticket.findOne({
-        where: {
-          updatedAt: {
-            [Op.between]: [
-              +sub(new Date(), {
-                minutes: Number(timeCreateNewTicket)
-              }),
-              +new Date()
-            ]
-          },
-          contactId: contact.id,
-          companyId,
-          whatsappId: whatsapp.id
-        },
-        order: [["updatedAt", "DESC"]]
-      });
-    }
-
-    if (ticket && ticket.status !== "nps") {
-      await ticket.update({
-        status: "pending",
-        unreadMessages,
-        companyId,
-        // queueId: timeCreateNewTicket === 0 ? null : ticket.queueId
-      });
-    }
-  }
-
-  if (!ticket) {
-
-    const ticketData: any = {
-      contactId: groupContact ? groupContact.id : contact.id,
-      status: (!isImported && !isNil(settings.enableLGPD)
-        && openAsLGPD && !groupContact) ? //verifica se lgpd está habilitada e não é grupo e se tem a mensagem e link da política
-        "lgpd" :  //abre como LGPD caso habilitado parâmetro
-        (whatsapp.groupAsTicket === "enabled" || !groupContact) ? // se lgpd estiver desabilitado, verifica se é para tratar ticket como grupo ou se é contato normal
-          "pending" : //caso  é para tratar grupo como ticket ou não é grupo, abre como pendente
-          "group", // se não é para tratar grupo como ticket, vai direto para grupos
-      isGroup: !!groupContact,
-      unreadMessages,
-      whatsappId: whatsapp.id,
-      companyId,
-      isBot: groupContact ? false : true,
-      channel,
-      imported: isImported ? new Date() : null,
-      isActiveDemand: false,
-    };
-
-    if (DirectTicketsToWallets && contact.id) {
-      const wallet: any = contact;
-      const wallets = await wallet.getWallets();
-      if (wallets && wallets[0]?.id) {
-        ticketData.status = (!isImported && !isNil(settings.enableLGPD)
-          && openAsLGPD && !groupContact) ? //verifica se lgpd está habilitada e não é grupo e se tem a mensagem e link da política
-          "lgpd" :  //abre como LGPD caso habilitado parâmetro
-          (whatsapp.groupAsTicket === "enabled" || !groupContact) ? // se lgpd estiver desabilitado, verifica se é para tratar ticket como grupo ou se é contato normal
-            "open" : //caso  é para tratar grupo como ticket ou não é grupo, abre como pendente
-            "group", // se não é para tratar grupo como ticket, vai direto para grupos
-          ticketData.userId = wallets[0].id;
-      }
-    }
-
-    ticket = await Ticket.create(
-      ticketData
-    );
-
-    // await FindOrCreateATicketTrakingService({
-    //   ticketId: ticket.id,
-    //   companyId,
-    //   whatsappId: whatsapp.id,
-    //   userId: userId ? userId : ticket.userId
-    // });
-  }
-
-
-  if (queueId != 0 && !isNil(queueId)) {
-    //Determina qual a fila esse ticket pertence.
-    await ticket.update({ queueId: queueId });
-  }
-
-  if (userId != 0 && !isNil(userId)) {
-    //Determina qual a fila esse ticket pertence.
-    await ticket.update({ userId: userId });
-  }
+  ticket = await Ticket.create(ticketData);
 
   ticket = await ShowTicketService(ticket.id, companyId);
+
+  io.of(String(companyId)).emit(`company-${companyId}-ticket`, {
+    action: "update",
+    ticket
+  });
 
   await CreateLogTicketService({
     ticketId: ticket.id,
     type: openAsLGPD ? "lgpd" : "create"
   });
-
 
   return ticket;
 };

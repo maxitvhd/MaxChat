@@ -1,6 +1,7 @@
 import { getIO } from "../../libs/socket";
 import Contact from "../../models/Contact";
 import ContactCustomField from "../../models/ContactCustomField";
+import { findExistingContact } from "./CreateOrUpdateContactService";
 
 interface ExtraInfo extends ContactCustomField {
   name: string;
@@ -32,7 +33,11 @@ const CreateOrUpdateContactServiceForImport = async ({
   const io = getIO();
   let contact: Contact | null;
 
-  contact = await Contact.findOne({ where: { number , companyId } });
+  contact = await findExistingContact({
+    companyId,
+    number,
+    isGroup
+  });
 
   if (contact) {
     if (contact.companyId === null)

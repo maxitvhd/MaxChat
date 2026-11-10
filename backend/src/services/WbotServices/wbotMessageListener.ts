@@ -34,7 +34,9 @@ import { Mutex } from "async-mutex";
 import { getIO } from "../../libs/socket";
 import CreateMessageService from "../MessageServices/CreateMessageService";
 import logger from "../../utils/logger";
-import CreateOrUpdateContactService from "../ContactServices/CreateOrUpdateContactService";
+import CreateOrUpdateContactService, {
+  findExistingContact
+} from "../ContactServices/CreateOrUpdateContactService";
 import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
 import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
 import { debounce } from "../../helpers/Debounce";
@@ -512,9 +514,12 @@ const getSenderMessage = (
     msg.participant || msg.key.participant || msg.key.remoteJid || undefined;
 
   // Em grupo o participante pode vir como @lid; se o WhatsApp mandou o
-  // telefone junto (participantPn), uso ele pra não duplicar o contato
-  if (senderId?.endsWith("@lid") && key.participantPn) {
-    senderId = key.participantPn;
+  // telefone junto (participantPn / participantAlt), uso ele pra não duplicar o contato
+  if (senderId?.endsWith("@lid")) {
+    const altParticipant = key.participantPn || key.participantAlt || key.senderPn;
+    if (altParticipant && !String(altParticipant).endsWith("@lid")) {
+      senderId = altParticipant;
+    }
   }
 
   return senderId && jidNormalizedUser(senderId);
@@ -528,16 +533,17 @@ const getContactMessage = async (msg: proto.IWebMessageInfo, wbot: Session) => {
         id: getSenderMessage(msg, wbot),
         name: msg.pushName
       }
-    : resolveLidContact(msg, rawNumber);
+    : resolveLidContact(msg, rawNumber, wbot);
 };
 
 // O WhatsApp passou a mandar muitas conversas como xxx@lid em vez do
-// telefone. Quando vem o senderPn (telefone real) eu uso ele como
-// identidade, senão o sistema cria um contato novo com o número do LID
+// telefone. Quando vem o senderPn/remoteJidAlt ou mapeamento no store (telefone real),
+// eu uso ele como identidade, senão o sistema cria um contato novo com o número do LID
 // e abre uma segunda conversa pra mesma pessoa.
 const resolveLidContact = (
   msg: proto.IWebMessageInfo,
-  rawNumber: string
+  rawNumber: string,
+  wbot?: Session
 ): IMe => {
   const remoteJid = msg.key.remoteJid;
   const name = msg.key.fromMe ? rawNumber : msg.pushName;
@@ -546,8 +552,38 @@ const resolveLidContact = (
     return { id: remoteJid, name };
   }
 
-  const senderPn = (msg.key as any).senderPn as string | undefined;
-  const pnJid = senderPn ? jidNormalizedUser(senderPn) : undefined;
+  const key = msg.key as any;
+  let senderPn =
+    (key.senderPn as string | undefined) ||
+    (key.remoteJidAlt as string | undefined) ||
+    (key.participantPn as string | undefined) ||
+    (key.participantAlt as string | undefined);
+
+  if (!senderPn && wbot) {
+    const storeContacts = (wbot as any).store?.contacts || (wbot as any).contacts;
+    if (storeContacts) {
+      const direct = storeContacts[remoteJid];
+      if (direct?.phoneNumber || (direct?.id && String(direct.id).endsWith("@s.whatsapp.net"))) {
+        senderPn = direct.phoneNumber || direct.id;
+      } else {
+        const match = Object.values(storeContacts).find(
+          (c: any) =>
+            c &&
+            c.lid === remoteJid &&
+            typeof c.id === "string" &&
+            c.id.endsWith("@s.whatsapp.net")
+        ) as any;
+        if (match?.id) {
+          senderPn = match.id;
+        }
+      }
+    }
+  }
+
+  const pnJid =
+    senderPn && !String(senderPn).endsWith("@lid")
+      ? jidNormalizedUser(String(senderPn).includes("@") ? String(senderPn) : `${String(senderPn).replace(/\D/g, "")}@s.whatsapp.net`)
+      : undefined;
 
   return {
     id: pnJid || remoteJid,
@@ -881,31 +917,26 @@ const verifyContact = async (
     contactData.number = msgContact.id.replace("@g.us", "");
   }
 
-  const lid = msgContact.lid;
+  const lid = msgContact.lid || (msgContact.id.endsWith("@lid") ? msgContact.id : undefined);
   const hasPn = lid && !msgContact.id.endsWith("@lid");
 
   // Só tenho o LID: se já conheço esse LID, devolvo o contato certo
   if (lid && !hasPn) {
-    const known = await findContactByLid(lid, companyId);
+    const known = await findExistingContact({
+      companyId,
+      remoteJid: lid,
+      lid,
+      isGroup: contactData.isGroup
+    });
     if (known) return known;
   }
 
-  // Tenho o telefone: se existir um contato antigo criado com o número do
-  // LID e nenhum com o telefone, converto ele pro telefone (sem apagar nada)
-  if (hasPn) {
-    const pnNumber = contactData.number;
-    const byPn = await Contact.findOne({ where: { companyId, number: pnNumber } });
-    if (!byPn) {
-      const byLid = await Contact.findOne({ where: { companyId, remoteJid: lid } });
-      if (byLid) {
-        await byLid.update({ number: pnNumber, remoteJid: msgContact.id });
-      }
-    }
-  }
+  const contact = await CreateOrUpdateContactService({
+    ...contactData,
+    lid
+  });
 
-  const contact = await CreateOrUpdateContactService(contactData);
-
-  if (hasPn) {
+  if (lid) {
     try {
       await saveContactLid(contact, lid);
     } catch (e) {
@@ -5585,20 +5616,54 @@ const wbotUserJid = wbot?.user?.id;
     contacts.forEach(async (contact: any) => {
       if (!contact?.id) return;
 
+      const isGroup = contact.id.includes("@g.us");
+      const lid = contact.lid || (contact.id.endsWith("@lid") ? contact.id : undefined);
+
+      // Se o evento trouxe telefone real e LID juntos, vincula o LID ao contato existente
+      if (contact.id.endsWith("@s.whatsapp.net") && contact.lid) {
+        try {
+          const existingByPhone = await findExistingContact({
+            companyId,
+            number: contact.id.replace(/\D/g, ""),
+            remoteJid: contact.id,
+            lid: contact.lid,
+            isGroup: false
+          });
+          if (existingByPhone) {
+            await saveContactLid(existingByPhone, contact.lid);
+          }
+        } catch (err) {
+          logger.warn(`[LID] erro em contacts.update: ${err}`);
+        }
+      }
+
       if (typeof contact.imgUrl !== "undefined") {
+        // Evita criar contato fantasma apenas com número de @lid quando o WhatsApp atualiza foto de perfil
+        const existing = await findExistingContact({
+          companyId,
+          number: contact.id.replace(/\D/g, ""),
+          remoteJid: contact.id,
+          lid,
+          isGroup
+        });
+        if (!existing && contact.id.endsWith("@lid")) {
+          return;
+        }
+
         const newUrl =
           contact.imgUrl === ""
             ? ""
             : await wbot!.profilePictureUrl(contact.id!).catch(() => null);
         const contactData = {
-          name: contact.id.replace(/\D/g, ""),
-          number: contact.id.replace(/\D/g, ""),
-          isGroup: contact.id.includes("@g.us") ? true : false,
+          name: existing?.name || contact.name || contact.notify || contact.id.replace(/\D/g, ""),
+          number: existing?.number || contact.id.replace(/\D/g, ""),
+          isGroup,
           companyId: companyId,
-          remoteJid: contact.id,
+          remoteJid: existing?.remoteJid || contact.id,
           profilePicUrl: newUrl,
           whatsappId: wbot.id,
-          wbot: wbot
+          wbot: wbot,
+          lid
         };
 
         await CreateOrUpdateContactService(contactData);

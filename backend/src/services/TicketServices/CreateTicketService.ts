@@ -1,18 +1,15 @@
 import AppError from "../../errors/AppError";
 
-import { Op } from "sequelize";
 import GetDefaultWhatsApp from "../../helpers/GetDefaultWhatsApp";
 import GetDefaultWhatsAppByUser from "../../helpers/GetDefaultWhatsAppByUser";
 import Ticket from "../../models/Ticket";
 import ShowContactService from "../ContactServices/ShowContactService";
 import { getIO } from "../../libs/socket";
 import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
-import Queue from "../../models/Queue";
-import User from "../../models/User";
-import CheckContactOpenTickets from "../../helpers/CheckContactOpenTickets";
 
 import CreateLogTicketService from "./CreateLogTicketService";
 import ShowTicketService from "./ShowTicketService";
+import { consolidateAndFindContactTicket } from "./FindOrCreateTicketService";
 
 interface Request {
   contactId: number;
@@ -35,44 +32,57 @@ const CreateTicketService = async ({
   const io = getIO();
 
   let whatsapp;
-  let defaultWhatsapp
+  let defaultWhatsapp;
 
   if (whatsappId !== "undefined" && whatsappId !== null && whatsappId !== "") {
-    // 
-    whatsapp = await ShowWhatsAppService(whatsappId, companyId)
+    whatsapp = await ShowWhatsAppService(whatsappId, companyId);
   }
-
 
   defaultWhatsapp = await GetDefaultWhatsAppByUser(userId);
 
   if (whatsapp) {
     defaultWhatsapp = whatsapp;
   }
-  if (!defaultWhatsapp)
-    defaultWhatsapp = await GetDefaultWhatsApp(whatsapp.id, companyId);
-
-  // 
-  await CheckContactOpenTickets(contactId, defaultWhatsapp.id, companyId);
+  if (!defaultWhatsapp) {
+    defaultWhatsapp = await GetDefaultWhatsApp(whatsapp?.id, companyId);
+  }
 
   const { isGroup } = await ShowContactService(contactId, companyId);
 
-  let ticket = await Ticket.create({
+  // Busca qualquer conversa existente desse contato (ativa ou fechada, de qualquer conexão)
+  // e consolida eventuais duplicadas para sempre reabrir a mesma conversa
+  let { ticket, wasReopened } = await consolidateAndFindContactTicket(
     contactId,
     companyId,
-    whatsappId: defaultWhatsapp.id,
-    channel: defaultWhatsapp.channel,
-    isGroup,
-    userId,
-    isBot: true,
-    queueId,
-    status: isGroup ? "group" : "open",
-    isActiveDemand: true
-  });
+    defaultWhatsapp.id
+  );
 
-  // await Ticket.update(
-  //   { companyId, queueId, userId, status: isGroup? "group": "open", isBot: true },
-  //   { where: { id } }
-  // );
+  if (ticket) {
+    await ticket.update({
+      companyId,
+      whatsappId: defaultWhatsapp.id,
+      channel: defaultWhatsapp.channel,
+      isGroup,
+      userId: userId || ticket.userId,
+      queueId: queueId || ticket.queueId,
+      status: isGroup ? "group" : "open",
+      isBot: false,
+      isActiveDemand: true
+    });
+  } else {
+    ticket = await Ticket.create({
+      contactId,
+      companyId,
+      whatsappId: defaultWhatsapp.id,
+      channel: defaultWhatsapp.channel,
+      isGroup,
+      userId,
+      isBot: true,
+      queueId,
+      status: isGroup ? "group" : "open",
+      isActiveDemand: true
+    });
+  }
 
   ticket = await ShowTicketService(ticket.id, companyId);
 
@@ -81,9 +91,6 @@ const CreateTicketService = async ({
   }
 
   io.of(String(companyId))
-    // .to(ticket.status)
-    // .to("notification")
-    // .to(ticket.id.toString())
     .emit(`company-${companyId}-ticket`, {
       action: "update",
       ticket
@@ -93,7 +100,7 @@ const CreateTicketService = async ({
     userId,
     queueId,
     ticketId: ticket.id,
-    type: "create"
+    type: wasReopened ? "reopen" : "create"
   });
 
   return ticket;

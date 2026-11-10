@@ -1,8 +1,8 @@
 import AppError from "../../errors/AppError";
-import CheckContactOpenTickets from "../../helpers/CheckContactOpenTickets";
 import GetDefaultWhatsApp from "../../helpers/GetDefaultWhatsApp";
 import Ticket from "../../models/Ticket";
 import { getIO } from "../../libs/socket";
+import { consolidateAndFindContactTicket } from "./FindOrCreateTicketService";
 
 interface Request {
   contactId: number;
@@ -27,18 +27,22 @@ const CreateTicketServiceWebhook = async ({
   hashFlowId,
   flowStopped
 }: Request): Promise<Ticket> => {
-  const defaultWhatsapp = await GetDefaultWhatsApp(companyId);
-
-  await CheckContactOpenTickets(contactId, 0, companyId);
+  const defaultWhatsapp = await GetDefaultWhatsApp(undefined, companyId);
 
   const isGroup = false;
 
-  const [{ id }] = await Ticket.findOrCreate({
-    where: {
-      contactId,
-      companyId
-    },
-    defaults: {
+  // Reaproveita ou reabre a conversa existente do contato independentemente da conexão
+  let { ticket: existingTicket } = await consolidateAndFindContactTicket(
+    contactId,
+    companyId,
+    defaultWhatsapp.id
+  );
+
+  let id: number;
+  if (existingTicket) {
+    id = existingTicket.id;
+  } else {
+    const created = await Ticket.create({
       contactId,
       companyId,
       whatsappId: defaultWhatsapp.id,
@@ -49,8 +53,9 @@ const CreateTicketServiceWebhook = async ({
       dataWebhook: dataWebhook,
       hashFlowId: hashFlowId,
       flowStopped: flowStopped
-    }
-  });
+    });
+    id = created.id;
+  }
 
   await Ticket.update(
     {

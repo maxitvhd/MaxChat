@@ -24,6 +24,9 @@ import CreateMessageService from "../MessageServices/CreateMessageService";
 import FindOrCreateTicketService from "./FindOrCreateTicketService";
 import formatBody from "../../helpers/Mustache";
 import { Mutex } from "async-mutex";
+import GetDefaultWhatsApp from "../../helpers/GetDefaultWhatsApp";
+import Message from "../../models/Message";
+import logger from "../../utils/logger";
 
 interface TicketData {
   status?: string;
@@ -118,24 +121,50 @@ const UpdateTicketService = async ({
       return { ticket, oldStatus, oldUserId };
     }
 
-    if (oldStatus === "closed") {
-      
-      let otherTicket = await Ticket.findOne({
+    // Se a conversa estava sem conexão vinculada (ex.: conexão antiga recriada), vincula à conexão padrão ativa
+    if (isNil(ticket.whatsappId)) {
+      try {
+        const defaultWhatsapp = await GetDefaultWhatsApp(undefined, companyId, userId || undefined);
+        if (defaultWhatsapp) {
+          await ticket.update({ whatsappId: defaultWhatsapp.id });
+          ticket.whatsappId = defaultWhatsapp.id;
+        }
+      } catch (e) {
+        logger.warn(`Não foi possível vincular conexão padrão ao ticket ${ticket.id}: ${e}`);
+      }
+    }
+
+    // Sempre que reabrir ou colocar em atendimento/aguardando, unifica eventuais outras conversas
+    // abertas/pendentes do mesmo contato independentemente do whatsappId
+    if (oldStatus === "closed" || status === "open" || status === "pending") {
+      const otherActiveTickets = await Ticket.findAll({
         where: {
+          companyId,
           contactId: ticket.contactId,
-          status: { [Op.or]: ["open", "pending", "group"] },
-          whatsappId: ticket.whatsappId
+          id: { [Op.ne]: ticket.id },
+          status: { [Op.or]: ["open", "pending", "group", "nps", "lgpd"] }
         }
       });
-      if (otherTicket) {
-        if (otherTicket.id !== ticket.id) {
-          otherTicket = await ShowTicketService(otherTicket.id, companyId)
-          return { ticket: otherTicket, oldStatus, oldUserId }
+
+      for (const dup of otherActiveTickets) {
+        try {
+          await Message.update(
+            { ticketId: ticket.id },
+            { where: { ticketId: dup.id, companyId } }
+          );
+          await dup.update({ status: "closed", unreadMessages: 0 });
+          io.of(String(companyId)).emit(`company-${companyId}-ticket`, {
+            action: "delete",
+            ticketId: dup.id
+          });
+        } catch (err) {
+          logger.warn(`Erro ao unificar ticket duplicado ${dup.id} em UpdateTicketService: ${err}`);
         }
       }
 
-      // await CheckContactOpenTickets(ticket.contactId, ticket.whatsappId );
-      isBot = false;
+      if (oldStatus === "closed") {
+        isBot = false;
+      }
     }
 
     const ticketTraking = await FindOrCreateATicketTrakingService({
@@ -143,12 +172,20 @@ const UpdateTicketService = async ({
       companyId,
       whatsappId: ticket?.whatsappId
     });
-    // 
-    const { complationMessage, ratingMessage, groupAsTicket } = await ShowWhatsAppService(
-      ticket?.whatsappId,
 
-      companyId
-    );
+    let complationMessage = "";
+    let ratingMessage = "";
+    let groupAsTicket = "disabled";
+    if (ticket?.whatsappId) {
+      try {
+        const wpp = await ShowWhatsAppService(ticket.whatsappId, companyId);
+        complationMessage = wpp.complationMessage;
+        ratingMessage = wpp.ratingMessage;
+        groupAsTicket = wpp.groupAsTicket;
+      } catch (e) {
+        logger.warn(`ShowWhatsAppService falhou para ticket ${ticket.id}: ${e}`);
+      }
+    }
 
     if (status !== undefined && ["closed"].indexOf(status) > -1) {
 

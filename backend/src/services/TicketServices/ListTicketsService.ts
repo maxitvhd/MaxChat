@@ -16,6 +16,25 @@ import ContactTag from "../../models/ContactTag";
 import removeAccents from "remove-accents";
 
 import FindCompanySettingOneService from "../CompaniesSettings/FindCompanySettingOneService";
+import { findExistingContact } from "../ContactServices/CreateOrUpdateContactService";
+import { consolidateAndFindContactTicket } from "./FindOrCreateTicketService";
+
+// Gera uma chave canônica para números brasileiros (DDI 55 + DDD + 8 últimos dígitos)
+// para identificar contatos duplicados com/sem 9º dígito
+const getCanonicalPhoneKey = (rawNumber?: string): string => {
+  const digits = (rawNumber || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("55") && digits.length === 13 && digits[4] === "9") {
+    return digits.slice(0, 4) + digits.slice(5);
+  }
+  if (!digits.startsWith("55") && digits.length === 11 && digits[2] === "9") {
+    return "55" + digits.slice(0, 2) + digits.slice(3);
+  }
+  if (!digits.startsWith("55") && digits.length === 10) {
+    return "55" + digits;
+  }
+  return digits;
+};
 
 interface Request {
   searchParam?: string;
@@ -270,9 +289,9 @@ const ListTicketsService = async ({
       }
 
       latestTickets = await Ticket.findAll({
-        attributes: ['companyId', 'contactId', 'whatsappId', [literal('MAX("id")'), 'id']],
+        attributes: ['companyId', 'contactId', [literal('MAX("id")'), 'id']],
         where: whereCondition2,
-        group: ['companyId', 'contactId', 'whatsappId'],
+        group: ['companyId', 'contactId'],
       });
 
     } else {
@@ -295,9 +314,9 @@ const ListTicketsService = async ({
       }
 
       latestTickets = await Ticket.findAll({
-        attributes: ['companyId', 'contactId', 'whatsappId', [literal('MAX("id")'), 'id']],
+        attributes: ['companyId', 'contactId', [literal('MAX("id")'), 'id']],
         where: whereCondition2,
-        group: ['companyId', 'contactId', 'whatsappId'],
+        group: ['companyId', 'contactId'],
       });
 
     }
@@ -317,13 +336,13 @@ const ListTicketsService = async ({
       let latestTickets;
       if (!showTicketAllQueues && user.profile === "user") {
         latestTickets = await Ticket.findAll({
-          attributes: ['companyId', 'contactId', 'whatsappId', [literal('MAX("id")'), 'id']],
+          attributes: ['companyId', 'contactId', [literal('MAX("id")'), 'id']],
           where: {
             [Op.or]: [{ userId }, { status: ["pending", "closed", "group"] }],
             queueId: showAll === "true" || showTicketWithoutQueue ? { [Op.or]: [queueIds, null] } : queueIds,
             companyId
           },
-          group: ['companyId', 'contactId', 'whatsappId'],
+          group: ['companyId', 'contactId'],
         });
       } else {
         let whereCondition2: Filterable["where"] = {
@@ -348,9 +367,9 @@ const ListTicketsService = async ({
         }
 
         latestTickets = await Ticket.findAll({
-          attributes: ['companyId', 'contactId', 'whatsappId', [literal('MAX("id")'), 'id']],
+          attributes: ['companyId', 'contactId', [literal('MAX("id")'), 'id']],
           where: whereCondition2,
-          group: ['companyId', 'contactId', 'whatsappId'],
+          group: ['companyId', 'contactId'],
         });
 
       }
@@ -505,6 +524,65 @@ const ListTicketsService = async ({
           };
         }
       }
+
+  // Antes de listar abertos/pendentes, verifica se existem tickets ativos duplicados para o mesmo
+  // contato (ou contatos duplicados com mesmo telefone) e os consolida automaticamente em uma única conversa
+  if (status === "open" || status === "pending") {
+    const activeCompanyTickets = await Ticket.findAll({
+      where: {
+        companyId,
+        isGroup: false,
+        status: { [Op.in]: ["open", "pending", "lgpd", "nps"] }
+      },
+      attributes: ["id", "contactId", "status", "updatedAt"],
+      include: [
+        {
+          model: Contact,
+          as: "contact",
+          attributes: ["id", "name", "number", "remoteJid"]
+        }
+      ]
+    });
+
+    const groupsByContactOrPhone = new Map<string, Ticket[]>();
+    const groupsByName = new Map<string, Ticket[]>();
+
+    for (const t of activeCompanyTickets) {
+      const phoneKey = getCanonicalPhoneKey(t.contact?.number);
+      const key = phoneKey || `contact_${t.contactId}`;
+      const list = groupsByContactOrPhone.get(key) || [];
+      list.push(t);
+      groupsByContactOrPhone.set(key, list);
+
+      const cleanName = t.contact?.name ? t.contact.name.trim().toLowerCase() : "";
+      if (cleanName.length >= 2 && !/^\d+$/.test(cleanName)) {
+        const nameList = groupsByName.get(cleanName) || [];
+        nameList.push(t);
+        groupsByName.set(cleanName, nameList);
+      }
+    }
+
+    const duplicateGroups: Ticket[][] = [];
+    for (const [, group] of groupsByContactOrPhone.entries()) {
+      if (group.length > 1) duplicateGroups.push(group);
+    }
+    for (const [, group] of groupsByName.entries()) {
+      if (group.length > 1) duplicateGroups.push(group);
+    }
+
+    for (const group of duplicateGroups) {
+      const sample = group[0];
+      const primaryContact = await findExistingContact({
+        companyId,
+        name: sample.contact?.name,
+        number: sample.contact?.number,
+        remoteJid: sample.contact?.remoteJid,
+        isGroup: false
+      });
+      const targetContactId = primaryContact ? primaryContact.id : sample.contactId;
+      await consolidateAndFindContactTicket(targetContactId, companyId);
+    }
+  }
 
   whereCondition = {
     ...whereCondition,

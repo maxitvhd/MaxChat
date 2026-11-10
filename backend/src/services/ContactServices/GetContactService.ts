@@ -2,6 +2,7 @@ import AppError from "../../errors/AppError";
 import Contact from "../../models/Contact";
 import ContactCustomField from "../../models/ContactCustomField";
 import CreateContactService from "./CreateContactService";
+import { findExistingContact } from "./CreateOrUpdateContactService";
 
 interface ExtraInfo extends ContactCustomField {
   name: string;
@@ -24,8 +25,9 @@ const GetContactService = async ({
   number,
   companyId
 }: Request): Promise<Contact> => {
-  const numberExists = await Contact.findOne({
-    where: { number, companyId }
+  const numberExists = await findExistingContact({
+    companyId,
+    number
   });
 
   if (!numberExists) {

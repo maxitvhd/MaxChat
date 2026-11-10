@@ -55,32 +55,31 @@ const ListMessagesService = async ({
 
   const isAllHistoricEnabled = await isQueueIdHistoryBlocked({ userRequest: user.id });
 
+  // Busca todas as conversas desse contato na empresa (independentemente de whatsappId ou ordem de id)
+  // para exibir o histórico completo unificado quando a conversa é reaberta por qualquer origem
   let ticketIds = [];
   if (!isAllHistoricEnabled) {
     ticketIds = await Ticket.findAll({
-      where:
-      {
-        id: { [Op.lte]: ticket.id },
+      where: {
         companyId: ticket.companyId,
         contactId: ticket.contactId,
-        whatsappId: ticket.whatsappId,
         isGroup: ticket.isGroup,
-        queueId: user.profile === "admin" || user.allTicket === "enable" || (ticket.isGroup && user.allowGroup) ?
-          {
-            [Op.or]: [queues, null]
-          } :
-          { [Op.in]: queues },
+        queueId:
+          user.profile === "admin" ||
+          user.allTicket === "enable" ||
+          (ticket.isGroup && user.allowGroup)
+            ? {
+                [Op.or]: [queues, null]
+              }
+            : { [Op.in]: queues }
       },
       attributes: ["id"]
     });
   } else {
     ticketIds = await Ticket.findAll({
-      where:
-      {
-        id: { [Op.lte]: ticket.id },
+      where: {
         companyId: ticket.companyId,
         contactId: ticket.contactId,
-        whatsappId: ticket.whatsappId,
         isGroup: ticket.isGroup
       },
       attributes: ["id"]
