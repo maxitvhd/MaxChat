@@ -67,3 +67,4 @@ SSHPASS='...' sshpass -e ssh -p 10022 root@131.108.32.83 "pm2 status"
 # Consultar as últimas 100 linhas de log do backend
 SSHPASS='...' sshpass -e ssh -p 10022 root@131.108.32.83 "pm2 logs maxchat-backend --lines 100 --nostream"
 ```
+

@@ -12,3 +12,4 @@
 - `backend/src/services/TicketServices/ListTicketsService.ts`, `TicketsQueuesService.ts`, `backend/src/services/MessageServices/ListMessagesService.ts`: agrupamento de 1 conversa por contato nas abas e unificação do histórico de mensagens do contato.
 - `backend/src/services/TicketServices/CreateLogTicketService.ts`, `UpdateTicketService.ts`, `DeleteTicketService.ts`: correção de chave estrangeira ao fechar tickets sem fila/usuário e remoção completa de todos os tickets do contato ao excluir a conversa.
 - `deploy.sh`, `DEPLOY.md`: script e documentação para commit, push, build e restart automático no servidor via SSH/PM2.
+
